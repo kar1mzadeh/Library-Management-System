@@ -37,7 +37,7 @@ class MyGeneraltable extends JFrame {
     }
     Object[][] getData() {
         try {
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\RegistrationPage\\brodsky.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\G513R\\Desktop\\TeamWork\\team-project-team-11\\RegistrationPage\\brodsky.csv"));
             ArrayList<Object[]> list = new ArrayList<>();
             String str;
             int count=0;

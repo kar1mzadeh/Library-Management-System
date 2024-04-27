@@ -65,7 +65,7 @@ public class LoginFrame extends JFrame implements ActionListener {
         add(registerButton);
 
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\users.csv", true));
+            BufferedWriter writer = new BufferedWriter(new FileWriter("users.csv", true));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -111,7 +111,7 @@ public class LoginFrame extends JFrame implements ActionListener {
     }
 
     private boolean checkCredentials(String username, String password) {
-        try (BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\users.csv"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("users.csv"))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
