@@ -25,8 +25,8 @@ public class OptionDatabase extends JFrame implements ActionListener {
         getContentPane().setBackground(Color.GRAY);
 
         // Load images (assuming the images are in the same directory as the Java class)
-        ImageIcon generalIcon = new ImageIcon("C:\\\\Users\\\\G513R\\\\Desktop\\\\TeamWork\\\\team-project-team-11\\\\RegistrationPage\\\\personaldatabase.png");
-        ImageIcon personalIcon = new ImageIcon("C:\\Users\\G513R\\Desktop\\TeamWork\\team-project-team-11\\RegistrationPage\\personaldatabase.png");
+        ImageIcon generalIcon = new ImageIcon("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11\\RegistrationPage\\personaldatabase.png");
+        ImageIcon personalIcon = new ImageIcon("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11\\RegistrationPage\\personaldatabase.png");
 
         Image img = generalIcon.getImage();
 
@@ -69,6 +69,7 @@ ImageIcon generalIconRed = new ImageIcon(bufferedImage);
         generalButton.setFont(new Font("Arial", Font.BOLD, 14));
         generalButton.addActionListener(this);
         generalButton.setFocusPainted(false);
+        generalButton.setForeground(Color.BLACK);
         add(generalButton);
 
         personalButton = new JButton("Personal DB");
@@ -76,10 +77,11 @@ ImageIcon generalIconRed = new ImageIcon(bufferedImage);
         personalButton.setFont(new Font("Arial", Font.BOLD, 14));
         personalButton.addActionListener(this);
         personalButton.setFocusPainted(false);
+        personalButton.setForeground(Color.BLACK);
         add(personalButton);
     }
 
-    @Override
+    @Override   
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == generalButton) {
             new MyGeneraltable();

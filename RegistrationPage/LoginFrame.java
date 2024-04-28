@@ -12,6 +12,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 
         LoginFrame loginFrame = new LoginFrame();
         loginFrame.setVisible(true);
+      
 
     }
 
@@ -22,46 +23,66 @@ public class LoginFrame extends JFrame implements ActionListener {
 
 
     public LoginFrame() {
-        setTitle("Book library login");
+        setTitle("Book Library");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(480, 320);
         setLayout(null);
         setLocationRelativeTo(null);
+        getContentPane().setBackground(Color.GRAY);
 
-        JLabel label = new JLabel("Welcome our library");
-        label.setBounds(160, 30, 200, 30);
+    
+        // Load the image
+        ImageIcon imageIcon = new ImageIcon("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11\\RegistrationPage\\library.png");
+        Image image = imageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon = new ImageIcon(image);
+        // Create a label to display the image
+        JLabel imageLabel = new JLabel(scaledIcon);
+        imageLabel.setBounds(120, 20, 60, 60);
+
+        // Add the image label to the frame
+        add(imageLabel);
+
+        JLabel label = new JLabel("Welcome Library");
+        label.setBounds(190, 30, 200, 30);
         label.setFont(new Font("Arial", Font.BOLD, 18));
+        label.setForeground(Color.BLACK);
         add(label);
 
 
         JLabel usernameLabel = new JLabel("Username:");
         usernameLabel.setBounds(110, 90, 80, 30);
         usernameLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        usernameLabel.setForeground(Color.BLACK);
         add(usernameLabel);
 
         usernameField = new JTextField();
         usernameField.setBounds(200, 90, 165, 30);
+        usernameField.setForeground(Color.BLACK);
         add(usernameField);
 
         JLabel passwordLabel = new JLabel("Password:");
         passwordLabel.setBounds(110, 150, 80, 30);
         passwordLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        passwordLabel.setForeground(Color.BLACK);
         add(passwordLabel);
 
         passwordField = new JPasswordField();
         passwordField.setBounds(200, 150, 165, 30);
+        passwordField.setForeground(Color.BLACK);
         add(passwordField);
 
         loginButton = new JButton("Login");
         loginButton.setBounds(120, 220, 100, 45);
         loginButton.setFont(new Font("Arial", Font.BOLD, 14));
         loginButton.addActionListener(this);
+        loginButton.setForeground(Color.BLACK);
         add(loginButton);
 
         registerButton = new JButton("Register");
         registerButton.setBounds(270, 220, 100, 45);
         registerButton.setFont(new Font("Arial", Font.BOLD, 14));
         registerButton.addActionListener(this);
+        registerButton.setForeground(Color.BLACK);
         add(registerButton);
 
         try {
