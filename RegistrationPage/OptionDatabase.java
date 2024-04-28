@@ -69,6 +69,7 @@ ImageIcon generalIconRed = new ImageIcon(bufferedImage);
         generalButton.setFont(new Font("Arial", Font.BOLD, 14));
         generalButton.addActionListener(this);
         generalButton.setFocusPainted(false);
+        generalButton.setForeground(Color.BLACK);
         add(generalButton);
 
         personalButton = new JButton("Personal DB");
@@ -76,6 +77,7 @@ ImageIcon generalIconRed = new ImageIcon(bufferedImage);
         personalButton.setFont(new Font("Arial", Font.BOLD, 14));
         personalButton.addActionListener(this);
         personalButton.setFocusPainted(false);
+        personalButton.setForeground(Color.BLACK);
         add(personalButton);
     }
 
