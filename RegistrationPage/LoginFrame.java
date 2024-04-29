@@ -16,8 +16,8 @@ public class LoginFrame extends JFrame implements ActionListener {
 
     }
 
-    private JTextField usernameField;
-    private JPasswordField passwordField;
+    private JTextField usernameTextField;
+    private JPasswordField passwordPasswordField;
     private JButton loginButton;
     private JButton registerButton;
 
@@ -43,61 +43,63 @@ public class LoginFrame extends JFrame implements ActionListener {
         add(imageLabel);
 
         JLabel label = new JLabel("Welcome Library");
-        label.setBounds(190, 30, 200, 30);
-        label.setFont(new Font("Arial", Font.BOLD, 18));
+        label.setBounds(200, 30, 200, 30);
+        label.setFont(new Font("Times New Roman", Font.BOLD, 18));
         label.setForeground(Color.BLACK);
         add(label);
 
 
         JLabel usernameLabel = new JLabel("Username:");
         usernameLabel.setBounds(110, 90, 80, 30);
-        usernameLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        usernameLabel.setFont(new Font("Times New Roman", Font.BOLD, 14));
         usernameLabel.setForeground(Color.BLACK);
         add(usernameLabel);
 
-        usernameField = new JTextField();
-        usernameField.setBounds(200, 90, 165, 30);
-        usernameField.setForeground(Color.BLACK);
-        add(usernameField);
+        usernameTextField = new JTextField();
+        usernameTextField.setBounds(200, 90, 165, 30);
+        usernameTextField.setForeground(Color.BLACK);
+        add(usernameTextField);
 
         JLabel passwordLabel = new JLabel("Password:");
         passwordLabel.setBounds(110, 150, 80, 30);
-        passwordLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        passwordLabel.setFont(new Font("Times New Roman", Font.BOLD, 14));
         passwordLabel.setForeground(Color.BLACK);
         add(passwordLabel);
 
-        passwordField = new JPasswordField();
-        passwordField.setBounds(200, 150, 165, 30);
-        passwordField.setForeground(Color.BLACK);
-        add(passwordField);
+        passwordPasswordField = new JPasswordField();
+        passwordPasswordField.setBounds(200, 150, 165, 30);
+        passwordPasswordField.setForeground(Color.BLACK);
+        add(passwordPasswordField);
 
         loginButton = new JButton("Login");
         loginButton.setBounds(120, 220, 100, 45);
-        loginButton.setFont(new Font("Arial", Font.BOLD, 14));
+        loginButton.setFont(new Font("Times New Roman", Font.BOLD, 14));
         loginButton.addActionListener(this);
         loginButton.setForeground(Color.BLACK);
         add(loginButton);
 
         registerButton = new JButton("Register");
         registerButton.setBounds(270, 220, 100, 45);
-        registerButton.setFont(new Font("Arial", Font.BOLD, 14));
+        registerButton.setFont(new Font("Times New Roman", Font.BOLD, 14));
         registerButton.addActionListener(this);
         registerButton.setForeground(Color.BLACK);
         add(registerButton);
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter("users.csv", true));
+           writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == loginButton) {
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
+            String username = usernameTextField.getText();
+            String password = new String(passwordPasswordField.getPassword());
             if (checkCredentials(username, password) ) {
                 JOptionPane.showMessageDialog(this, "Login Successful");
                 dispose();
@@ -105,15 +107,15 @@ public class LoginFrame extends JFrame implements ActionListener {
                     new MyGeneraltable();
                 }
                 else{
-                    OptionDatabase optionDatabase = new OptionDatabase();
-                    optionDatabase.setVisible(true);
+                    MainMenu mainMenu = new MainMenu();
+                    mainMenu.setVisible(true);
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid Username or Password");
             }
         } else if (e.getSource() == registerButton) {
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
+            String username = usernameTextField.getText();
+            String password = new String(passwordPasswordField.getPassword());
             if (registerUser(username, password)) {
                 JOptionPane.showMessageDialog(this, "Registration Successful");
                 dispose();
@@ -121,20 +123,20 @@ public class LoginFrame extends JFrame implements ActionListener {
                     new MyGeneraltable();
                 }
                 else{
-                    OptionDatabase optionDatabase = new OptionDatabase();
-                    optionDatabase.setVisible(true);
+                    MainMenu mainMenu = new MainMenu();
+                    mainMenu.setVisible(true);
                 }
 
             } else {
-                JOptionPane.showMessageDialog(this, "Because Of Same UserName,Failed To Registration ");
+                JOptionPane.showMessageDialog(this, "The Same Username is existed, You should try another username");
             }
         }
     }
 
     private boolean checkCredentials(String username, String password) {
-        try (BufferedReader br = new BufferedReader(new FileReader("users.csv"))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("users.csv"))) {
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = bufferedReader.readLine()) != null) {
                 String[] parts = line.split(",");
                 if (parts.length >= 2 && parts[0].equals(username) && parts[1].equals(password)) {
                     return true;
@@ -147,17 +149,17 @@ public class LoginFrame extends JFrame implements ActionListener {
     }
 
     private boolean registerUser(String username, String password) {
-        try (BufferedReader br = new BufferedReader(new FileReader("users.csv"));
-             BufferedWriter bw = new BufferedWriter(new FileWriter("users.csv", true))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("users.csv"));
+             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("users.csv", true))) {
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = bufferedReader.readLine()) != null) {
                 String[] parts = line.split(",");
                 if (parts.length > 0 && parts[0].equals(username)) {
                     return false;
                 }
             }
-            bw.write(username + "," + password);
-            bw.newLine();
+            bufferedWriter.write(username + "," + password);
+            bufferedWriter.newLine();
             return true;
         }  catch (IOException e) {
             e.printStackTrace();
