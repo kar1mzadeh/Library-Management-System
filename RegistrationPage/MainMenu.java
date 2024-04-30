@@ -25,13 +25,14 @@ public class MainMenu extends JFrame implements ActionListener {
     getContentPane().setBackground(Color.GRAY);
 
     // Load images (assuming the images are in the same directory as the Java class)
-    ImageIcon generalIcon = new ImageIcon("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11\\RegistrationPage\\personaldatabase.png");
-    ImageIcon personalIcon = new ImageIcon("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11\\RegistrationPage\\personaldatabase.png");
+    ImageIcon generalIcon = new ImageIcon("RegistrationPage\\personaldatabase.png");
+    ImageIcon personalIcon = new ImageIcon("RegistrationPage\\personaldatabase.png");
 
     Image img = generalIcon.getImage();
 
     // Create a BufferedImage to modify the image
-    BufferedImage bufferedImage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+    BufferedImage bufferedImage = new BufferedImage(img.getWidth(null), img.getHeight(null),
+        BufferedImage.TYPE_INT_ARGB);
     Graphics2D g2d = bufferedImage.createGraphics();
     g2d.drawImage(img, 0, 0, null);
     g2d.dispose();
@@ -52,7 +53,6 @@ public class MainMenu extends JFrame implements ActionListener {
     // Create a new ImageIcon with the modified image
     ImageIcon generalIconRed = new ImageIcon(bufferedImage);
 
-
     // Create labels for the images
     JLabel generalLabel = new JLabel();
     generalLabel.setIcon(generalIconRed);
@@ -64,8 +64,7 @@ public class MainMenu extends JFrame implements ActionListener {
     personalLabel.setBounds(230, 20, 210, 210);
     add(personalLabel);
 
-
-// create button of general and personal database
+    // create button of general and personal database
     generalButton = new JButton("General DB");
     generalButton.setBounds(10, 200, 200, 25);
     generalButton.setFont(new Font("Times New Roman", Font.BOLD, 15));

@@ -12,7 +12,6 @@ public class LoginFrame extends JFrame implements ActionListener {
 
         LoginFrame loginFrame = new LoginFrame();
         loginFrame.setVisible(true);
-      
 
     }
 
@@ -20,7 +19,6 @@ public class LoginFrame extends JFrame implements ActionListener {
     private JPasswordField passwordPasswordField;
     private JButton loginButton;
     private JButton registerButton;
-
 
     public LoginFrame() {
         setTitle("Book Library");
@@ -30,9 +28,8 @@ public class LoginFrame extends JFrame implements ActionListener {
         setLocationRelativeTo(null);
         getContentPane().setBackground(Color.GRAY);
 
-    
         // Load the image
-        ImageIcon imageIcon = new ImageIcon("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11\\RegistrationPage\\library.png");
+        ImageIcon imageIcon = new ImageIcon("RegistrationPage\\library.png");
         Image image = imageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
         ImageIcon scaledIcon = new ImageIcon(image);
         // Create a label to display the image
@@ -47,7 +44,6 @@ public class LoginFrame extends JFrame implements ActionListener {
         label.setFont(new Font("Times New Roman", Font.BOLD, 18));
         label.setForeground(Color.BLACK);
         add(label);
-
 
         JLabel usernameLabel = new JLabel("Username:");
         usernameLabel.setBounds(110, 90, 80, 30);
@@ -87,11 +83,11 @@ public class LoginFrame extends JFrame implements ActionListener {
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter("users.csv", true));
-           writer.close();
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
     }
 
     @Override
@@ -100,13 +96,12 @@ public class LoginFrame extends JFrame implements ActionListener {
         if (e.getSource() == loginButton) {
             String username = usernameTextField.getText();
             String password = new String(passwordPasswordField.getPassword());
-            if (checkCredentials(username, password) ) {
+            if (checkCredentials(username, password)) {
                 JOptionPane.showMessageDialog(this, "Login Successful");
                 dispose();
-                if(username.equals("admin") && password.equals("admin")){
+                if (username.equals("admin") && password.equals("admin")) {
                     new MyGeneraltable();
-                }
-                else{
+                } else {
                     MainMenu mainMenu = new MainMenu();
                     mainMenu.setVisible(true);
                 }
@@ -119,10 +114,9 @@ public class LoginFrame extends JFrame implements ActionListener {
             if (registerUser(username, password)) {
                 JOptionPane.showMessageDialog(this, "Registration Successful");
                 dispose();
-                if(username.equals("admin") && password.equals("admin")){
+                if (username.equals("admin") && password.equals("admin")) {
                     new MyGeneraltable();
-                }
-                else{
+                } else {
                     MainMenu mainMenu = new MainMenu();
                     mainMenu.setVisible(true);
                 }
@@ -150,7 +144,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 
     private boolean registerUser(String username, String password) {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader("users.csv"));
-             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("users.csv", true))) {
+                BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("users.csv", true))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 String[] parts = line.split(",");
@@ -161,11 +155,10 @@ public class LoginFrame extends JFrame implements ActionListener {
             bufferedWriter.write(username + "," + password);
             bufferedWriter.newLine();
             return true;
-        }  catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return false;
     }
-
 
 }
