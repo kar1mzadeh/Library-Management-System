@@ -1,5 +1,4 @@
 package RegistrationPage;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,18 +8,14 @@ import java.io.*;
 public class LoginFrame extends JFrame implements ActionListener {
 
     public static void main(String[] args) {
-
         LoginFrame loginFrame = new LoginFrame();
         loginFrame.setVisible(true);
-      
-
     }
 
     private JTextField usernameTextField;
     private JPasswordField passwordPasswordField;
     private JButton loginButton;
     private JButton registerButton;
-
 
     public LoginFrame() {
         setTitle("Book Library");
@@ -30,9 +25,8 @@ public class LoginFrame extends JFrame implements ActionListener {
         setLocationRelativeTo(null);
         getContentPane().setBackground(Color.GRAY);
 
-    
         // Load the image
-        ImageIcon imageIcon = new ImageIcon("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11\\RegistrationPage\\library.png");
+        ImageIcon imageIcon = new ImageIcon("RegistrationPage\\library.png");
         Image image = imageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
         ImageIcon scaledIcon = new ImageIcon(image);
         // Create a label to display the image
@@ -42,12 +36,11 @@ public class LoginFrame extends JFrame implements ActionListener {
         // Add the image label to the frame
         add(imageLabel);
 
-        JLabel label = new JLabel("Welcome Library");
+        JLabel label = new JLabel("Welcome To You");
         label.setBounds(200, 30, 200, 30);
         label.setFont(new Font("Times New Roman", Font.BOLD, 18));
         label.setForeground(Color.BLACK);
         add(label);
-
 
         JLabel usernameLabel = new JLabel("Username:");
         usernameLabel.setBounds(110, 90, 80, 30);
@@ -85,28 +78,28 @@ public class LoginFrame extends JFrame implements ActionListener {
         registerButton.setForeground(Color.BLACK);
         add(registerButton);
 
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("users.csv", true));
-           writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        // Create users.csv file if it doesn't exist
+        File file = new File("users.csv");
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
         if (e.getSource() == loginButton) {
             String username = usernameTextField.getText();
             String password = new String(passwordPasswordField.getPassword());
-            if (checkCredentials(username, password) ) {
+            if (checkCredentials(username, password)) {
                 JOptionPane.showMessageDialog(this, "Login Successful");
                 dispose();
-                if(username.equals("admin") && password.equals("admin")){
+                if (username.equals("admin") && password.equals("admin")) {
                     new MyGeneraltable();
-                }
-                else{
+                } else {
                     MainMenu mainMenu = new MainMenu();
                     mainMenu.setVisible(true);
                 }
@@ -114,22 +107,9 @@ public class LoginFrame extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Invalid Username or Password");
             }
         } else if (e.getSource() == registerButton) {
-            String username = usernameTextField.getText();
-            String password = new String(passwordPasswordField.getPassword());
-            if (registerUser(username, password)) {
-                JOptionPane.showMessageDialog(this, "Registration Successful");
-                dispose();
-                if(username.equals("admin") && password.equals("admin")){
-                    new MyGeneraltable();
-                }
-                else{
-                    MainMenu mainMenu = new MainMenu();
-                    mainMenu.setVisible(true);
-                }
-
-            } else {
-                JOptionPane.showMessageDialog(this, "The Same Username is existed, You should try another username");
-            }
+            this.dispose();
+            RegisterPage registerPage = new RegisterPage();
+        registerPage.setVisible(true);
         }
     }
 
@@ -147,25 +127,4 @@ public class LoginFrame extends JFrame implements ActionListener {
         }
         return false;
     }
-
-    private boolean registerUser(String username, String password) {
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("users.csv"));
-             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("users.csv", true))) {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length > 0 && parts[0].equals(username)) {
-                    return false;
-                }
-            }
-            bufferedWriter.write(username + "," + password);
-            bufferedWriter.newLine();
-            return true;
-        }  catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-
 }

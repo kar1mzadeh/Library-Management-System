@@ -26,7 +26,7 @@ public class PersonalDB {
 
         Object[][] getPersonalData() {
             try {
-                BufferedReader bufferedReader = new BufferedReader(new FileReader("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11-1\\users.csv"));
+                BufferedReader bufferedReader = new BufferedReader(new FileReader("users.csv"));
                 ArrayList<Object[]> list = new ArrayList<>();
                 String str;
                 int count = 0;

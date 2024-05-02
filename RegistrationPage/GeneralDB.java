@@ -40,7 +40,7 @@ class MyGeneraltable extends JFrame {
     }
     Object[][] getData() {
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11-1\\RegistrationPage\\brodsky.csv"));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader("RegistrationPage\\brodsky.csv"));
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("generalDatabaseUpdated.csv"));
             bufferedWriter.write("Title" + "Author" + "Rating" + "Review");
             ArrayList<Object[]> list = new ArrayList<>();

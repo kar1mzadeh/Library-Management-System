@@ -25,8 +25,8 @@ public class MainMenu extends JFrame implements ActionListener {
     getContentPane().setBackground(Color.GRAY);
 
     // Load images (assuming the images are in the same directory as the Java class)
-    ImageIcon generalIcon = new ImageIcon("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11\\RegistrationPage\\personaldatabase.png");
-    ImageIcon personalIcon = new ImageIcon("C:\\Users\\Rahman\\OneDrive - ADA University\\Desktop\\team-project-team-11\\team-project-team-11\\RegistrationPage\\personaldatabase.png");
+    ImageIcon generalIcon = new ImageIcon("RegistrationPage\\personaldatabase.png");
+    ImageIcon personalIcon = new ImageIcon("RegistrationPage\\personaldatabase.png");
 
     Image img = generalIcon.getImage();
 
