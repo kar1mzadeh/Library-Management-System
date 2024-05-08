@@ -46,24 +46,33 @@ import java.util.stream.Collectors;
         }
         
           // Add a book to the personal database with default values for certain fields
-    public static void addBookToPersonalDB(String username, String[] bookDetails) {
-        ArrayList<String[]> books = loadPersonalBooks(username);
-
-       
-        if (bookDetails.length < 10) { // Ensure array has 10 elements
-            String[] completeDetails = new String[10];
-            System.arraycopy(bookDetails, 0, completeDetails, 0, bookDetails.length);
-            Arrays.fill(completeDetails, bookDetails.length, 10, "N/A"); // Fill empty slots with "N/A"
-            completeDetails[4] = "Not Started"; // Default status
-            completeDetails[5] = "0"; // Default time spent
-            completeDetails[8] = "Add rating"; // Default user rating
-            completeDetails[9] = "Add review"; // Default user review
-            books.add(completeDetails);
-        } else {
-            books.add(bookDetails);
-        }   
-        savePersonalBooks(username, books);
-    }
+          public static boolean addBookToPersonalDB(String username, String[] bookDetails) {
+            ArrayList<String[]> books = loadPersonalBooks(username);
+        
+            // Check for existing book by title
+            boolean bookExists = books.stream().anyMatch(b -> b[0].equalsIgnoreCase(bookDetails[0]));
+            if (bookExists) {
+                return false; // Book already exists, do not add
+            }
+        
+            // Add book if not already present
+            if (bookDetails.length < 10) {
+                String[] completeDetails = new String[10];
+                System.arraycopy(bookDetails, 0, completeDetails, 0, bookDetails.length);
+                Arrays.fill(completeDetails, bookDetails.length, 10, "N/A");
+                completeDetails[4] = "Not Started";
+                completeDetails[5] = "0";
+                completeDetails[8] = "Add rating";
+                completeDetails[9] = "Add review";
+                books.add(completeDetails);
+            } else {
+                books.add(bookDetails);
+            }
+            savePersonalBooks(username, books);
+            return true;
+        }
+        
+        
     public static void savePersonalBooks(String username, ArrayList<String[]> books) {
         // Read all lines, filter out this user's previous entries, and append new ones
         ArrayList<String> allLines = new ArrayList<>();
@@ -195,7 +204,8 @@ ratingField = new JTextField(10);
             controlPanel.add(new JLabel("Author"));
             controlPanel.add(authorField); 
             controlPanel.add(new JLabel("Rating:"));
-            controlPanel.add(ratingField); controlPanel.add(new JLabel("Review:"));
+            controlPanel.add(ratingField);
+             controlPanel.add(new JLabel("Review:"));
             controlPanel.add(reviewField);
             
             controlPanel.add(addButton);
@@ -228,23 +238,29 @@ public void openPersonalTable() {
 }
 
     
-        private void addBook(ActionEvent e) {
-            String title = titleField.getText();
-            String author = authorField.getText();
-            String rating = ratingField.getText();
-            String review = reviewField.getText();
-            String status = "Not started";  // default status
-            String timeSpent = "0";  // default time spent
-            String startDate = "";  // default start date
-            String endDate = "";  // default end date
-            String userRating = "Add rating";  // default user rating
-            String userReview = "Add review";  // default user review
-        
-            String[] bookDetails = {title, author, rating, review, status, timeSpent, startDate, endDate, userRating, userReview};
-            model.addRow(bookDetails);  // Add to table
-            PersonalDB.addBookToPersonalDB(username, bookDetails);  // Persist to CSV
-            clearInputFields();  // Optional: clear input fields after adding
-        }
+private void addBook(ActionEvent e) {
+    String title = titleField.getText();
+    String author = authorField.getText();
+    String rating = ratingField.getText();
+    String review = reviewField.getText();
+    String status = "Not started";
+    String timeSpent = "0";
+    String startDate = "";
+    String endDate = "";
+    String userRating = "Add rating";
+    String userReview = "Add review";
+
+    String[] bookDetails = {title, author, rating, review, status, timeSpent, startDate, endDate, userRating, userReview};
+    
+    boolean addedSuccessfully = PersonalDB.addBookToPersonalDB(username, bookDetails);
+    if (addedSuccessfully) {
+        model.addRow(bookDetails);  // Only add to table if successfully added to DB
+        clearInputFields();  // Clear input fields after adding
+    } else {
+        JOptionPane.showMessageDialog(this, "This book title already exists in your personal library.", "Duplicate Book Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
         
         private void clearInputFields() {
             titleField.setText("");
@@ -269,27 +285,28 @@ public void openPersonalTable() {
             ratingField.setText(model.getValueAt(row, 2).toString());
             reviewField.setText(model.getValueAt(row, 3).toString());
             statusField.setText(model.getValueAt(row, 4).toString());
-            startDateField.setText(model.getValueAt(row, 5).toString());
-            endDateField.setText(model.getValueAt(row, 6).toString());
-            userRatingField.setText(model.getValueAt(row, 7).toString());
-            userReviewField.setText(model.getValueAt(row, 8).toString());
+            startDateField.setText(model.getValueAt(row, 6).toString());
+            endDateField.setText(model.getValueAt(row, 7).toString());
+            userRatingField.setText(model.getValueAt(row, 8).toString());
+            userReviewField.setText(model.getValueAt(row, 9).toString());
         }
         
     
         private void updateBook(ActionEvent e) {
             int selectedRow = table.getSelectedRow();
             if (selectedRow >= 0) {
-                // Update only fields that user can change
+                // Ensure that fields are correctly mapped to table columns
                 model.setValueAt(statusField.getText(), selectedRow, 4);
-                model.setValueAt(startDateField.getText(), selectedRow, 5);
-                model.setValueAt(endDateField.getText(), selectedRow, 6);
-                model.setValueAt(userRatingField.getText(), selectedRow, 7);
-                model.setValueAt(userReviewField.getText(), selectedRow, 8);
+                model.setValueAt(startDateField.getText(), selectedRow, 6);
+                model.setValueAt(endDateField.getText(), selectedRow, 7);
+                model.setValueAt(userRatingField.getText(), selectedRow, 8);
+                model.setValueAt(userReviewField.getText(), selectedRow, 9);
         
-                // Update the data in the CSV
-                saveUpdatedBooks();
+                // Update the data in the CSV (requires re-writing or better file handling)
+                saveUpdatedBooks();  // Implement this to handle CSV updates
             }
         }
+        
     
         private void deleteBook(ActionEvent e) {
             int selectedRow = table.getSelectedRow();

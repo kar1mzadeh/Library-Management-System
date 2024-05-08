@@ -1,6 +1,8 @@
 package RegistrationPage;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
@@ -43,9 +45,13 @@ class MyGeneraltable extends JFrame {
         };
 
         table = new JTable(defaultTableModel);
-        table.setAutoCreateRowSorter(true);
-        table.getTableHeader().setFont(new Font(table.getFont().getFontName(), Font.BOLD, 16));
-        table.getTableHeader().addMouseListener(new HeaderMouseListener());
+    table.setAutoCreateRowSorter(true);  // Set up the table with a row sorter
+    TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
+    table.setRowSorter(sorter);  // Ensure this is explicitly set, even if auto create is true
+
+    // Attaching the mouse listener to the table header for sorting
+    table.getTableHeader().addMouseListener(new HeaderMouseListener());
+    table.getTableHeader().setFont(new Font(table.getFont().getFontName(), Font.BOLD, 16));
 
         add(new JScrollPane(table), BorderLayout.CENTER);
         add(createControlPanel(), BorderLayout.SOUTH);
@@ -76,7 +82,7 @@ class MyGeneraltable extends JFrame {
     
     private JPanel createControlPanel() {
         JPanel controlPanel = new JPanel();
-        controlPanel.setLayout(new GridLayout(2, 5, 10, 10)); 
+        controlPanel.setLayout(new GridLayout(2, 10, 10, 10)); 
          // Adjust layout for better field distribution
     
         // Initializing text fields
@@ -84,6 +90,25 @@ class MyGeneraltable extends JFrame {
         authorField = new JTextField();
         ratingField = new JTextField();
         reviewField = new JTextField();
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JTextField searchField = new JTextField(20);
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                filterTable(searchField.getText());
+            }
+            public void removeUpdate(DocumentEvent e) {
+                filterTable(searchField.getText());
+            }
+            public void insertUpdate(DocumentEvent e) {
+                filterTable(searchField.getText());
+            }
+        });
+    
+        searchPanel.add(new JLabel("Search:"));
+        controlPanel.add(searchPanel);
+
+        controlPanel.add(searchField);
+      
     
         // Adding fields and buttons to panel
         controlPanel.add(new JLabel("Title:"));
@@ -212,6 +237,17 @@ class MyGeneraltable extends JFrame {
             JOptionPane.showMessageDialog(this, "Please select a book to delete.");
         }
     }
+    private void filterTable(String searchText) {
+        RowFilter<DefaultTableModel, Object> rf = null;
+        try {
+            // (?i) for case-insensitive matching
+            rf = RowFilter.regexFilter("(?i)" + searchText);
+        } catch (java.util.regex.PatternSyntaxException e) {
+            return;
+        }
+        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+        sorter.setRowFilter(rf);
+    }
     
 
    
@@ -231,6 +267,25 @@ class MyGeneraltable extends JFrame {
         }
     }
 
+    private void loadBooks() {
+        ArrayList<String[]> books = PersonalDB.loadPersonalBooks(username);
+        DefaultTableModel model = new DefaultTableModel();
+        model.setRowCount(0); // Clear existing rows first
+        for (String[] book : books) {
+            model.addRow(book); // Populate the table with new user data
+        }
+        table.clearSelection(); // Clear any existing selection
+    }
+
+    public void switchUser(String newUser) {
+        username = newUser;
+        loadBooks(); // Reload the books for the new user
+        table.clearSelection(); // Clear selections
+        setTitle("Personal Database - " + username); // Update window title
+        // Optionally, reset any user-specific settings or UI components
+    }
+    
+    
     private void updateCSV() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("generalDatabaseUpdated.csv"))) {
             bw.write("Title,Author,Rating,Review\n"); // Write header
@@ -249,18 +304,57 @@ class MyGeneraltable extends JFrame {
         public void mouseClicked(MouseEvent e) {
             int column = table.columnAtPoint(e.getPoint());
             String columnName = table.getColumnName(column);
-            int clickCount = columnClickCount.getOrDefault(columnName, 0);
-            clickCount = (clickCount + 1) % 3; // Cycles through 0, 1, 2
-            columnClickCount.put(columnName, clickCount);
             TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
-            if (clickCount == 0) {
-                sorter.setSortKeys(null); // Unsorted
+            ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>(sorter.getSortKeys());
+    
+            if (e.isControlDown()) {
+                // If Control is held, add or toggle the sort key for the column
+                Optional<RowSorter.SortKey> existingKey = sortKeys.stream()
+                    .filter(key -> key.getColumn() == column)
+                    .findFirst();
+    
+                if (existingKey.isPresent()) {
+                    // If already sorted, toggle through the states
+                    SortOrder nextOrder = nextSortOrder(existingKey.get().getSortOrder());
+                    if (nextOrder == null) {
+                        sortKeys.remove(existingKey.get());  // Remove sorting if reset to null
+                    } else {
+                        sortKeys.set(sortKeys.indexOf(existingKey.get()), new RowSorter.SortKey(column, nextOrder));
+                    }
+                } else {
+                    // If not sorted, add a new key for ascending
+                    sortKeys.add(new RowSorter.SortKey(column, SortOrder.ASCENDING));
+                }
             } else {
-                sorter.setSortKeys(Collections.singletonList(new RowSorter.SortKey(column, clickCount == 1 ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
+                // No Control means sorting by single column
+                SortOrder currentOrder = sorter.getSortKeys().stream()
+                    .filter(key -> key.getColumn() == column)
+                    .findFirst()
+                    .map(RowSorter.SortKey::getSortOrder)
+                    .orElse(null);
+    
+                sortKeys.clear(); // Clear existing sort keys
+                SortOrder nextOrder = nextSortOrder(currentOrder);
+                if (nextOrder != null) {
+                    sortKeys.add(new RowSorter.SortKey(column, nextOrder));
+                }
             }
+    
+            sorter.setSortKeys(sortKeys);
             sorter.sort();
         }
+    
+        private SortOrder nextSortOrder(SortOrder currentOrder) {
+            if (currentOrder == null || currentOrder == SortOrder.DESCENDING) {
+                return SortOrder.ASCENDING;
+            } else if (currentOrder == SortOrder.ASCENDING) {
+                return SortOrder.DESCENDING;
+            } else {
+                return null;
+            }
+        }
     }
+    
 
     public static void main(String[] args) {
         new MyGeneraltable(username);
