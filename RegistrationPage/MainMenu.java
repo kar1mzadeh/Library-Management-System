@@ -10,14 +10,15 @@ public class MainMenu extends JFrame implements ActionListener {
 
   JButton generalButton;
   JButton personalButton;
-  private String username;
+  private static String username;
 
   public static void main(String[] args) {
-    MainMenu mainMenu = new MainMenu();
+    MainMenu mainMenu = new MainMenu(username);
     mainMenu.setVisible(true);
   }
 
-  MainMenu() {
+  MainMenu(String username) {
+    this.username=username;
     setTitle("Main Menu");
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setSize(450, 300);

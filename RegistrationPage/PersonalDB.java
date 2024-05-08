@@ -48,6 +48,8 @@ import java.util.stream.Collectors;
           // Add a book to the personal database with default values for certain fields
     public static void addBookToPersonalDB(String username, String[] bookDetails) {
         ArrayList<String[]> books = loadPersonalBooks(username);
+
+       
         if (bookDetails.length < 10) { // Ensure array has 10 elements
             String[] completeDetails = new String[10];
             System.arraycopy(bookDetails, 0, completeDetails, 0, bookDetails.length);
@@ -59,7 +61,7 @@ import java.util.stream.Collectors;
             books.add(completeDetails);
         } else {
             books.add(bookDetails);
-        }
+        }   
         savePersonalBooks(username, books);
     }
     public static void savePersonalBooks(String username, ArrayList<String[]> books) {
@@ -91,34 +93,41 @@ import java.util.stream.Collectors;
             e.printStackTrace();
         }
     }
+    
+
+
         
     
         // Delete a book from all users
         public static void deleteBookFromAllUsers(String[] bookDetails) {
-            try {
-                ArrayList<String> updatedLines = new ArrayList<>();
-                File file = new File(PERSONAL_BOOKS_FILE);
-    
-                if (file.exists()) {
-                    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                        updatedLines = (ArrayList<String>) reader.lines().filter(line -> {
-                            String[] parts = line.split(",");
-                            // Keep the line unless it matches the book to be deleted
-                            return !(parts[1].equals(bookDetails[0]) && parts[2].equals(bookDetails[1]));
-                        }).collect(Collectors.toList());
-                    }
-    
-                    // Rewrite the file with the updated lines
-                    try (PrintWriter writer = new PrintWriter(new FileWriter(PERSONAL_BOOKS_FILE))) {
-                        for (String line : updatedLines) {
-                            writer.println(line);
-                        }
+            File file = new File(PERSONAL_BOOKS_FILE);
+            ArrayList<String> updatedLines = new ArrayList<>();
+        
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Split the line into components
+                    String[] parts = line.split(",");
+                    // Check if the current line matches the book to delete
+                    if (!(parts[1].equals(bookDetails[0]) && parts[2].equals(bookDetails[1]))) {
+                        // If it does not match, add it to the updated lines
+                        updatedLines.add(line);
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        
+            // Rewrite the CSV with the updated lines
+            try (PrintWriter writer = new PrintWriter(new FileWriter(PERSONAL_BOOKS_FILE))) {
+                for (String line : updatedLines) {
+                    writer.println(line);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
+        
     }
 
     
@@ -131,9 +140,10 @@ import java.util.stream.Collectors;
     
         public MyPersonalTable(String username) {
             this.username = username;
-            setTitle("Personal Database - " + username);
+    System.out.println("Received username in MyPersonalTable: " + username);
+    setTitle("Personal Database - " + username);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            setSize(800, 500);
+            setSize(1000, 600);
             setLocationRelativeTo(null);
 
             
@@ -152,7 +162,10 @@ import java.util.stream.Collectors;
             endDateField = new JTextField(10);
             userRatingField = new JTextField(10);
             userReviewField = new JTextField(10);
-
+            titleField = new JTextField(10);
+authorField = new JTextField(10);
+reviewField = new JTextField(10);
+ratingField = new JTextField(10);
             // Buttons
             addButton = new JButton("Add");
             updateButton = new JButton("Update");
@@ -166,6 +179,7 @@ import java.util.stream.Collectors;
     
             // Layout for controls
             JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new GridLayout(0, 2, 10, 10));
             controlPanel.add(new JLabel("Status:"));
             controlPanel.add(statusField);
             controlPanel.add(new JLabel("StartDate:"));
@@ -176,6 +190,14 @@ import java.util.stream.Collectors;
             controlPanel.add(userRatingField);
             controlPanel.add(new JLabel("UserReview:"));
             controlPanel.add(userReviewField);
+            controlPanel.add(new JLabel("Title:"));
+            controlPanel.add(titleField); 
+            controlPanel.add(new JLabel("Author"));
+            controlPanel.add(authorField); 
+            controlPanel.add(new JLabel("Rating:"));
+            controlPanel.add(ratingField); controlPanel.add(new JLabel("Review:"));
+            controlPanel.add(reviewField);
+            
             controlPanel.add(addButton);
             controlPanel.add(updateButton);
             controlPanel.add(deleteButton);
@@ -185,6 +207,7 @@ import java.util.stream.Collectors;
     
             loadBooks();  // Load the books into the table
             setVisible(true);
+            setupTableListeners();
         }
     
         private void loadBooks() {
@@ -193,6 +216,17 @@ import java.util.stream.Collectors;
                 model.addRow(book);
             }
         }
+        // This should be in the part of your code where you transition to the personal table view
+public void openPersonalTable() {
+    String currentUser = username;  // Ensure this method or variable correctly provides the non-null username
+    if (currentUser != null) {
+        MyPersonalTable personalTable = new MyPersonalTable(currentUser);
+        personalTable.setVisible(true);
+    } else {
+        System.out.println("Error: Username is null when trying to open Personal Table.");
+    }
+}
+
     
         private void addBook(ActionEvent e) {
             String title = titleField.getText();
@@ -218,22 +252,44 @@ import java.util.stream.Collectors;
             ratingField.setText("");
             reviewField.setText("");
         }
+      
+        private void setupTableListeners() {
+            table.getSelectionModel().addListSelectionListener(event -> {
+                if (!event.getValueIsAdjusting()) {
+                    int selectedRow = table.getSelectedRow();
+                    if (selectedRow != -1) {
+                        loadFieldsFromSelectedRow(selectedRow);
+                    }
+                }
+            });
+        }
+        private void loadFieldsFromSelectedRow(int row) {
+            titleField.setText(model.getValueAt(row, 0).toString());
+            authorField.setText(model.getValueAt(row, 1).toString());
+            ratingField.setText(model.getValueAt(row, 2).toString());
+            reviewField.setText(model.getValueAt(row, 3).toString());
+            statusField.setText(model.getValueAt(row, 4).toString());
+            startDateField.setText(model.getValueAt(row, 5).toString());
+            endDateField.setText(model.getValueAt(row, 6).toString());
+            userRatingField.setText(model.getValueAt(row, 7).toString());
+            userReviewField.setText(model.getValueAt(row, 8).toString());
+        }
         
     
         private void updateBook(ActionEvent e) {
             int selectedRow = table.getSelectedRow();
             if (selectedRow >= 0) {
-                model.setValueAt(titleField.getText(), selectedRow, 0);
-                model.setValueAt(authorField.getText(), selectedRow, 1);
-                model.setValueAt(ratingField.getText(), selectedRow, 2);
-                model.setValueAt(reviewField.getText(), selectedRow, 3);
-                // Assume other fields might also be updated similarly
+                // Update only fields that user can change
+                model.setValueAt(statusField.getText(), selectedRow, 4);
+                model.setValueAt(startDateField.getText(), selectedRow, 5);
+                model.setValueAt(endDateField.getText(), selectedRow, 6);
+                model.setValueAt(userRatingField.getText(), selectedRow, 7);
+                model.setValueAt(userReviewField.getText(), selectedRow, 8);
         
-                // Update the data in the CSV (requires re-writing or better file handling)
-                saveUpdatedBooks();  // You would need to implement this method
+                // Update the data in the CSV
+                saveUpdatedBooks();
             }
         }
-        
     
         private void deleteBook(ActionEvent e) {
             int selectedRow = table.getSelectedRow();
@@ -262,7 +318,8 @@ import java.util.stream.Collectors;
         }
     
         public static void main(String[] args) {
-            new MyPersonalTable(username); // Test with a hypothetical user
+            System.out.println("About to open MyPersonalTable with username: " + username);
+            new MyPersonalTable(username);
         }
     }
     

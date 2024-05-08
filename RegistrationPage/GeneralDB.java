@@ -194,11 +194,25 @@ class MyGeneraltable extends JFrame {
     private void deleteRow(ActionEvent e) {
         int selectedRow = table.getSelectedRow();
         if (selectedRow >= 0) {
+            // Retrieve book details
+            String title = (String) table.getValueAt(selectedRow, 0);
+            String author = (String) table.getValueAt(selectedRow, 1);
+    
+            // Remove the book from the general database displayed in the table
             defaultTableModel.removeRow(selectedRow);
             dataList.remove(selectedRow);
-            updateCSV(); // Update CSV after deleting a row
+    
+            // Update the CSV for general database
+            updateCSV();
+    
+            // Remove the book from all users' personal databases
+            String[] bookDetails = {title, author};
+            PersonalDB.deleteBookFromAllUsers(bookDetails);
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a book to delete.");
         }
     }
+    
 
    
 

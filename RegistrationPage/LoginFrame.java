@@ -88,8 +88,7 @@ public class LoginFrame extends JFrame implements ActionListener {
             }
         }
     }
-
-    @Override
+@Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == loginButton) {
             String username = usernameTextField.getText();
@@ -97,10 +96,10 @@ public class LoginFrame extends JFrame implements ActionListener {
             if (authenticate(username, password)) {
                 JOptionPane.showMessageDialog(this, "Login Successful");
                 dispose();
-                if (username.equals("admin") && password.equals("admin")) {
-                    new MyGeneraltable(username);
+                if (username.equals("admin")) {
+                    new MyGeneraltable(username);  // pass username to general table
                 } else {
-                    MainMenu mainMenu = new MainMenu();
+                    MainMenu mainMenu = new MainMenu(username);  // pass username to main menu
                     mainMenu.setVisible(true);
                 }
             } else {
@@ -108,12 +107,13 @@ public class LoginFrame extends JFrame implements ActionListener {
             }
         } else if (e.getSource() == registerButton) {
             this.dispose();
-            RegisterPage registerPage = new RegisterPage();
-        registerPage.setVisible(true);
+            new RegisterPage().setVisible(true);
         }
     }
 
     private boolean authenticate(String username, String password) {
+
+        
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader("users.csv"))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -127,24 +127,5 @@ public class LoginFrame extends JFrame implements ActionListener {
         }
         return false;
     }
-    // private boolean authenticate(String username, String password) {
-    //     try (BufferedReader reader = new BufferedReader(new FileReader("users.csv"))) {
-    //         String line;
-    //         while ((line = reader.readLine()) != null) {
-    //             String[] parts = line.split(",");
-    //             // if (parts[0].equals(username) && parts[1].equals(password)) {
-    //             //     // Assuming the third part is the role
-    //             //     sessionUser = new User(username, parts[2]);  // parts[2] could be 'admin' or 'user'
-    //             //     return true;
-    //             // }
-    //             if (parts.length > 2 && parts[0].equals(username) && parts[1].equals(password)) {
-    //                 sessionUser = new User(username, parts[2]);
-    //                 return true;
-    //             }
-    //         }
-    //     } catch (IOException ex) {
-    //         ex.printStackTrace();
-    //     }
-    //     return false;
-    // }
+ 
 }

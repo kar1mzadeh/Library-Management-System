@@ -107,7 +107,7 @@ public class RegisterPage extends JFrame implements ActionListener {
                     if (username.equals("admin") && password.equals("admin")) {
                     new MyGeneraltable(username);
                     } else {
-                        MainMenu mainMenu = new MainMenu();
+                        MainMenu mainMenu = new MainMenu(username);
                         mainMenu.setVisible(true);
                     }
                 } 
