@@ -1,152 +1,254 @@
 package RegistrationPage;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 
 class MyGeneraltable extends JFrame {
+    
+    JTextField titleField, authorField, ratingField, reviewField;
     JTable table;
-    Object[][] data;
     DefaultTableModel defaultTableModel;
+    JButton userManagerButton, personalDbButton;    
+    ArrayList<Object[]> dataList = new ArrayList<>(); // To manage table data more easily
     Map<String, Integer> columnClickCount = new HashMap<>();
+    private static String username;
+    
 
-    MyGeneraltable() {
+    MyGeneraltable(String username) {
+        this.username = username;
+      //  initializeUI();
         setBounds(500, 240, 800, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setVisible(true);
-        data = getData();
-        String[] columnName = { "Title", "Author", "Rating", "Review" };
 
-        defaultTableModel = new DefaultTableModel(data, columnName) {
+        String[] columnNames = { "Title", "Author", "Rating", "Review" };
+        loadData(); // Load data from CSV into dataList
+        
+
+        defaultTableModel = new DefaultTableModel(dataList.toArray(new Object[0][]), columnNames) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                return String.class; // Ensure all columns are sorted as strings
+                return String.class;
             }
 
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Disable editing of table cells
+                return false;
             }
         };
 
         table = new JTable(defaultTableModel);
-        table.setAutoCreateRowSorter(true); // Enable row sorting
-
-        Font headerFont = table.getTableHeader().getFont();
-        Font newHeaderFont = headerFont.deriveFont(Font.BOLD, 16);
-        table.getTableHeader().setFont(newHeaderFont);
-
+        table.setAutoCreateRowSorter(true);
+        table.getTableHeader().setFont(new Font(table.getFont().getFontName(), Font.BOLD, 16));
         table.getTableHeader().addMouseListener(new HeaderMouseListener());
 
-        add(new JScrollPane(table));
-        pack();
-        validate();
+        add(new JScrollPane(table), BorderLayout.CENTER);
+        add(createControlPanel(), BorderLayout.SOUTH);
+        setupTableListeners();
+
+        setVisible(true);
     }
+
+    private void setupTableListeners() {
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent event) {
+                if (!event.getValueIsAdjusting() && table.getSelectedRow() != -1) {
+                    // Get the model of the table
+                    DefaultTableModel model = (DefaultTableModel) table.getModel();
+                    
+                    // Retrieve the selected row index
+                    int selectedRowIndex = table.getSelectedRow();
+                    
+                    // Set the text fields based on the values in the selected row
+                    titleField.setText(model.getValueAt(selectedRowIndex, 0).toString());
+                    authorField.setText(model.getValueAt(selectedRowIndex, 1).toString());
+                    ratingField.setText(model.getValueAt(selectedRowIndex, 2).toString());
+                    reviewField.setText(model.getValueAt(selectedRowIndex, 3).toString());
+                }
+            }
+        });
+    }
+    
+    private JPanel createControlPanel() {
+        JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new GridLayout(2, 5, 10, 10)); 
+         // Adjust layout for better field distribution
+    
+        // Initializing text fields
+        titleField = new JTextField();
+        authorField = new JTextField();
+        ratingField = new JTextField();
+        reviewField = new JTextField();
+    
+        // Adding fields and buttons to panel
+        controlPanel.add(new JLabel("Title:"));
+        controlPanel.add(titleField);
+        controlPanel.add(new JLabel("Author:"));
+        controlPanel.add(authorField);
+        controlPanel.add(new JLabel("Rating:"));
+        controlPanel.add(ratingField);
+        controlPanel.add(new JLabel("Review:"));
+        controlPanel.add(reviewField);
+    
+        // Button for adding rows
+        JButton addButton = new JButton("Add");
+        addButton.addActionListener(this::addRow);
+    
+        // Button for updating rows
+        JButton updateButton = new JButton("Update");
+        updateButton.addActionListener(this::updateRow);
+    
+        // Button for deleting rows
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.addActionListener(this::deleteRow);
+    
+        // UserManager Button, only shown for admin
+        userManagerButton = new JButton("User Manager");
+        userManagerButton.addActionListener(e -> openUserManagement());
+        if ("admin".equals(username)) {
+            controlPanel.add(userManagerButton);
+        }
+    
+        controlPanel.add(addButton);
+        controlPanel.add(updateButton);
+        controlPanel.add(deleteButton);
+    
+
+        // Initialize and add other controls here...
+    
+        JButton addToPersonalButton = new JButton("Add to Personal Library");
+        addToPersonalButton.addActionListener(e -> addToPersonalLibrary());
+
+        personalDbButton = new JButton("Personal DB");
+        personalDbButton.addActionListener(e -> openPersonalDb());
+         
+         // Only add this button if the user is not an admin
+        if (!"admin".equals(username)) {
+            controlPanel.add(addToPersonalButton);
+            controlPanel.add(personalDbButton); 
+        }
+    
+        return controlPanel;
+    }
+    
+    private void addToPersonalLibrary() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow >= 0) {
+            String title = (String) table.getValueAt(selectedRow, 0);
+            String author = (String) table.getValueAt(selectedRow, 1);
+            String rating = (String) table.getValueAt(selectedRow, 2);
+            String review = (String) table.getValueAt(selectedRow, 3);
+    
+            String[] bookDetails = {title, author, rating, review, "Not Started", "0", "N/A", "N/A", "Add rating", "Add review"};
+            PersonalDB.addBookToPersonalDB(username, bookDetails);
+        } else {
+            JOptionPane.showMessageDialog(this, "No book selected!");
+        }
+    }
+
+    private void addRow(ActionEvent e) {
+        Object[] newRow = {
+            titleField.getText(),
+            authorField.getText(),
+            ratingField.getText(),
+            reviewField.getText()
+        };
+        defaultTableModel.addRow(newRow);
+        dataList.add(newRow);
+        updateCSV(); // Update CSV after adding a new row
+    }
+
+    private void openPersonalDb() {
+        new MyPersonalTable(username).setVisible(true);
+        this.dispose();
+    }
+
+    private void openUserManagement() {
+        UserManagementTable userManagement = new UserManagementTable(username);
+        userManagement.setVisible(true);
+    }
+    private void updateRow(ActionEvent e) {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow >= 0) {
+            Object[] updatedRow = {
+                titleField.getText(),
+                authorField.getText(),
+                ratingField.getText(),
+                reviewField.getText()
+            };
+
+            for (int i = 0; i < updatedRow.length; i++) {
+                defaultTableModel.setValueAt(updatedRow[i], selectedRow, i);
+            }
+
+            dataList.set(selectedRow, updatedRow); // Update the dataList
+            updateCSV(); // Update CSV after modifying a row
+        }
+    }
+
+    private void deleteRow(ActionEvent e) {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow >= 0) {
+            defaultTableModel.removeRow(selectedRow);
+            dataList.remove(selectedRow);
+            updateCSV(); // Update CSV after deleting a row
+        }
+    }
+
+   
+
+    private void loadData() {
+        File file = new File("generalDatabaseUpdated.csv");
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 4) { // Skip the header or any improperly formatted lines
+                    dataList.add(new Object[]{parts[0], parts[1], parts[2], parts[3]});
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateCSV() {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("generalDatabaseUpdated.csv"))) {
+            bw.write("Title,Author,Rating,Review\n"); // Write header
+            for (Object[] row : dataList) {
+                bw.write(String.format("%s,%s,%s,%s\n", row[0], row[1], row[2], row[3]));
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    
 
     private class HeaderMouseListener extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {
-            JTableHeader header = (JTableHeader) e.getSource();
-            TableColumnModel columnModel = header.getColumnModel();
-            int viewColumn = columnModel.getColumnIndexAtX(e.getX());
-            int column = columnModel.getColumn(viewColumn).getModelIndex();
-            String columnName = defaultTableModel.getColumnName(column);
-
+            int column = table.columnAtPoint(e.getPoint());
+            String columnName = table.getColumnName(column);
             int clickCount = columnClickCount.getOrDefault(columnName, 0);
-            clickCount++;
+            clickCount = (clickCount + 1) % 3; // Cycles through 0, 1, 2
             columnClickCount.put(columnName, clickCount);
-
             TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
-            ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>();
-
-            switch (clickCount % 3) {
-                case 0: // Original form
-                    columnClickCount.put(columnName, 0);
-                    defaultTableModel.setRowCount(0); // Clear table
-                    Object[][] originalData = getData(); // Get original data
-                    for (Object[] row : originalData) {
-                        defaultTableModel.addRow(row); // Add rows to table
-                    }
-                    break;
-                case 1: // Ascending order
-                    sortKeys.add(new RowSorter.SortKey(column, SortOrder.ASCENDING));
-                    break;
-                case 2: // Descending order
-                    sortKeys.add(new RowSorter.SortKey(column, SortOrder.DESCENDING));
-                    break;
+            if (clickCount == 0) {
+                sorter.setSortKeys(null); // Unsorted
+            } else {
+                sorter.setSortKeys(Collections.singletonList(new RowSorter.SortKey(column, clickCount == 1 ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
             }
-
-            sorter.setSortKeys(sortKeys);
             sorter.sort();
         }
     }
 
-    Object[][] getData() {
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader("RegistrationPage\\brodsky.csv"));
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("generalDatabaseUpdated.csv"));
-            bufferedWriter.write("Title" + "Author" + "Rating" + "Review");
-            ArrayList<Object[]> list = new ArrayList<>();
-            String str;
-            int count = 0;
-            while ((str = bufferedReader.readLine()) != null) {
-                if (count != 0) {
-                    String[] parts;
-                    String[] authorBooks = str.split("\"");
-                    if (authorBooks.length > 1) {
-                        int last = authorBooks.length - 1;
-                        String author = (authorBooks[last].trim().length() > 0) ? authorBooks[last].trim() : "Unknown";
-                        if (author.contains(",")) {
-                            author = author.replace(",", "");
-
-                        }
-                        parts = authorBooks[1].split(",");
-                        String rating = "No rating";
-                        String review = "No review";
-                        for (String title : parts) {
-                            title = title.replace("[", "");
-                            title = title.replace("]", "");
-                            list.add(new Object[] { title.trim(), author, rating, review });
-                            bufferedWriter.write(title.trim() + "," + author + "," + rating + "," + review);
-                            bufferedWriter.newLine();
-
-                        }
-                    } else {
-                        parts = str.split(",");
-                        String title = parts.length > 0 && !parts[0].trim().isEmpty() ? parts[0].trim() : "Unknown";
-                        String author = parts.length > 1 ? parts[1].trim() : "Unknown";
-                        String rating = "No rating";
-                        String review = "No review";
-                        title = title.replace("[", "");
-                        title = title.replace("]", "");
-                        list.add(new Object[] { title.trim(), author, rating, review });
-                        bufferedWriter.write(title.trim() + "," + author + "," + rating + "," + review);
-                        bufferedWriter.newLine();
-                    }
-
-                }
-                count++;
-
-            }
-            bufferedReader.close();
-            bufferedWriter.close();
-            Object[][] data = new Object[list.size()][2];
-            for (int i = 0; i < list.size(); i++) {
-                data[i] = list.get(i);
-            }
-            return data;
-
-        } catch (Exception x) {
-            x.printStackTrace();
-            return null;
-        }
-    }
-
     public static void main(String[] args) {
-        new MyGeneraltable();
+        new MyGeneraltable(username);
     }
 }

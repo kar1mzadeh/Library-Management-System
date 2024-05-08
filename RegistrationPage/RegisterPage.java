@@ -105,7 +105,7 @@ public class RegisterPage extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(this, "Registration Successful");
                     dispose();
                     if (username.equals("admin") && password.equals("admin")) {
-                    new MyGeneraltable();
+                    new MyGeneraltable(username);
                     } else {
                         MainMenu mainMenu = new MainMenu();
                         mainMenu.setVisible(true);

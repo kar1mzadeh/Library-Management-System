@@ -94,11 +94,11 @@ public class LoginFrame extends JFrame implements ActionListener {
         if (e.getSource() == loginButton) {
             String username = usernameTextField.getText();
             String password = new String(passwordPasswordField.getPassword());
-            if (checkCredentials(username, password)) {
+            if (authenticate(username, password)) {
                 JOptionPane.showMessageDialog(this, "Login Successful");
                 dispose();
                 if (username.equals("admin") && password.equals("admin")) {
-                    new MyGeneraltable();
+                    new MyGeneraltable(username);
                 } else {
                     MainMenu mainMenu = new MainMenu();
                     mainMenu.setVisible(true);
@@ -113,7 +113,7 @@ public class LoginFrame extends JFrame implements ActionListener {
         }
     }
 
-    private boolean checkCredentials(String username, String password) {
+    private boolean authenticate(String username, String password) {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader("users.csv"))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -127,4 +127,24 @@ public class LoginFrame extends JFrame implements ActionListener {
         }
         return false;
     }
+    // private boolean authenticate(String username, String password) {
+    //     try (BufferedReader reader = new BufferedReader(new FileReader("users.csv"))) {
+    //         String line;
+    //         while ((line = reader.readLine()) != null) {
+    //             String[] parts = line.split(",");
+    //             // if (parts[0].equals(username) && parts[1].equals(password)) {
+    //             //     // Assuming the third part is the role
+    //             //     sessionUser = new User(username, parts[2]);  // parts[2] could be 'admin' or 'user'
+    //             //     return true;
+    //             // }
+    //             if (parts.length > 2 && parts[0].equals(username) && parts[1].equals(password)) {
+    //                 sessionUser = new User(username, parts[2]);
+    //                 return true;
+    //             }
+    //         }
+    //     } catch (IOException ex) {
+    //         ex.printStackTrace();
+    //     }
+    //     return false;
+    // }
 }

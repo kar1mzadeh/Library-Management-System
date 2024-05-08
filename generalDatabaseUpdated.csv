@@ -1,4 +1,6 @@
-TitleAuthorRatingReviewMahabharata Bhagavad Gita,Unknown,No rating,No review
+Title,Author,Rating,Review
+Title,Author,Rating,Review
+Mahabharata Bhagavad Gita,Unknown,No rating,No review
 Epic of Gilgamesh,Unknown,No rating,No review
 The Old Testament,Unknown,No rating,No review
 Illiad,Homer,No rating,No review
@@ -29,7 +31,6 @@ Amores,Ovid,No rating,No review
 The New Testament,Unknown,No rating,No review
 The Twelve Caesars,Suetonius,No rating,No review
 Meditations,Marcus Aurelius,No rating,No review
-Poems,Catullus,No rating,No review
 Poems,Horace,No rating,No review
 Discourses,Epictetus,No rating,No review
 Plays,Aristophanes,No rating,No review

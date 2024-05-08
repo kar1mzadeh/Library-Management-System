@@ -10,6 +10,7 @@ public class MainMenu extends JFrame implements ActionListener {
 
   JButton generalButton;
   JButton personalButton;
+  private String username;
 
   public static void main(String[] args) {
     MainMenu mainMenu = new MainMenu();
@@ -83,11 +84,15 @@ public class MainMenu extends JFrame implements ActionListener {
   }
 
   @Override
-  public void actionPerformed(ActionEvent e) {
-    if (e.getSource() == generalButton) {
-      new MyGeneraltable();
-    } else if (e.getSource() == personalButton) {
-      new PersonalDB.MyPersonalTable();
+    public void actionPerformed(ActionEvent e){
+        if (e.getSource() == generalButton){
+            new MyGeneraltable(username);
+        }
+        else if  (e.getSource() == personalButton)
+        {
+    
+            new MyPersonalTable(username);
+        
+        }
     }
-  }
 }
