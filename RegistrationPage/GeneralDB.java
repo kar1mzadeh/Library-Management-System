@@ -56,9 +56,12 @@ class MyGeneraltable extends JFrame {
         add(new JScrollPane(table), BorderLayout.CENTER);
         add(createControlPanel(), BorderLayout.SOUTH);
         setupTableListeners();
-
+setupTableListeners1();
         setVisible(true);
+
+        
     }
+
 
     private void setupTableListeners() {
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -78,6 +81,36 @@ class MyGeneraltable extends JFrame {
                 }
             }
         });
+    }
+    private void setupTableListeners1() {
+        // Existing listeners
+        table.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                int row = table.rowAtPoint(e.getPoint());
+                int col = table.columnAtPoint(e.getPoint());
+                if (col == 3) { // Assuming the review column index is 3
+                    Object bookTitle = table.getValueAt(row, 0); // Assuming the title is in column 0
+                    if (bookTitle != null) {
+                        showReviewDetails(bookTitle.toString());
+                    }
+                }
+            }
+        });
+    }
+    private void showReviewDetails(String bookTitle) {
+        // Fetch reviews based on the book title
+        ArrayList<String[]> reviews = PersonalDB.getReviewsForBook(bookTitle);
+        JDialog reviewDialog = new JDialog();
+        reviewDialog.setTitle("Reviews for " + bookTitle);
+        reviewDialog.setSize(300, 400);
+        reviewDialog.setLayout(new BorderLayout());
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        for (String[] review : reviews) {
+            listModel.addElement(review[0] + " - " + review[1] + " - " + review[2]); // username - rating - review
+        }
+        JList<String> reviewList = new JList<>(listModel);
+        reviewDialog.add(new JScrollPane(reviewList), BorderLayout.CENTER);
+        reviewDialog.setVisible(true);
     }
     
     private JPanel createControlPanel() {
@@ -120,17 +153,20 @@ class MyGeneraltable extends JFrame {
         controlPanel.add(new JLabel("Review:"));
         controlPanel.add(reviewField);
     
-        // Button for adding rows
-        JButton addButton = new JButton("Add");
-        addButton.addActionListener(this::addRow);
+
+        if ("admin".equals(username)) {
+            JButton addButton = new JButton("Add");
+            addButton.addActionListener(this::addRow);
+            JButton updateButton = new JButton("Update");
+            updateButton.addActionListener(this::updateRow);
+            JButton deleteButton = new JButton("Delete");
+            deleteButton.addActionListener(this::deleteRow);
     
-        // Button for updating rows
-        JButton updateButton = new JButton("Update");
-        updateButton.addActionListener(this::updateRow);
-    
-        // Button for deleting rows
-        JButton deleteButton = new JButton("Delete");
-        deleteButton.addActionListener(this::deleteRow);
+            controlPanel.add(addButton);
+            controlPanel.add(updateButton);
+            controlPanel.add(deleteButton);
+        }
+
     
         // UserManager Button, only shown for admin
         userManagerButton = new JButton("User Manager");
@@ -138,12 +174,6 @@ class MyGeneraltable extends JFrame {
         if ("admin".equals(username)) {
             controlPanel.add(userManagerButton);
         }
-    
-        controlPanel.add(addButton);
-        controlPanel.add(updateButton);
-        controlPanel.add(deleteButton);
-    
-
         // Initialize and add other controls here...
     
         JButton addToPersonalButton = new JButton("Add to Personal Library");
@@ -177,15 +207,23 @@ class MyGeneraltable extends JFrame {
     }
 
     private void addRow(ActionEvent e) {
-        Object[] newRow = {
-            titleField.getText(),
-            authorField.getText(),
-            ratingField.getText(),
-            reviewField.getText()
-        };
-        defaultTableModel.addRow(newRow);
-        dataList.add(newRow);
-        updateCSV(); // Update CSV after adding a new row
+        String title = titleField.getText();
+        String author = authorField.getText();
+        String rating = ratingField.getText();
+        String review = reviewField.getText();
+    
+        // Check if the book title already exists in the dataList
+        boolean exists = dataList.stream().anyMatch(row -> row[0].equals(title));
+        if (exists) {
+            JOptionPane.showMessageDialog(this, "This title already exists in the database.", "Error", JOptionPane.ERROR_MESSAGE);
+            return; // Stop the addition process if the title exists
+        }
+    
+        // If the title doesn't exist, add the new row to the table and dataList
+        Object[] newRow = {title, author, rating, review};
+        defaultTableModel.addRow(newRow); // Add to table model
+        dataList.add(newRow); // Add to data list for persistence
+        updateCSV(); // Update the CSV after adding the new row
     }
 
     private void openPersonalDb() {
@@ -258,14 +296,21 @@ class MyGeneraltable extends JFrame {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
-                if (parts.length == 4) { // Skip the header or any improperly formatted lines
-                    dataList.add(new Object[]{parts[0], parts[1], parts[2], parts[3]});
+                if (parts.length == 4) {  // Assuming columns are Title, Author, Rating, Review
+                    String[] dataRow = Arrays.copyOf(parts, 4);
+                    // Fetch usernames who reviewed this book
+                    String usernames = PersonalDB.getUsernamesWhoReviewedBook(parts[0]);  // Assuming parts[0] is the book title
+                    dataRow[3] = usernames.isEmpty() ? "No reviews" : usernames;
+                    dataList.add(dataRow);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+   
+    
+    
 
     private void loadBooks() {
         ArrayList<String[]> books = PersonalDB.loadPersonalBooks(username);
@@ -354,6 +399,8 @@ class MyGeneraltable extends JFrame {
             }
         }
     }
+    
+
     
 
     public static void main(String[] args) {

@@ -1,8 +1,9 @@
 package RegistrationPage;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
-
-
+import javax.swing.table.TableRowSorter;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -102,6 +103,37 @@ import java.util.stream.Collectors;
             e.printStackTrace();
         }
     }
+    public static ArrayList<String[]> getReviewsForBook(String bookTitle) {
+    ArrayList<String[]> reviews = new ArrayList<>();
+    try (BufferedReader reader = new BufferedReader(new FileReader(PERSONAL_BOOKS_FILE))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(",");
+            if (parts[1].equalsIgnoreCase(bookTitle)) { // Assuming the second part is the book title
+                reviews.add(new String[] {parts[0], parts[9], parts[10]}); // username, user rating, user review
+            }
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    return reviews;
+}
+public static String getUsernamesWhoReviewedBook(String bookTitle) {
+    ArrayList<String> usernames = new ArrayList<>();
+    try (BufferedReader reader = new BufferedReader(new FileReader("personalDatabaseUpdated.csv"))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(",");
+            if (parts[1].equalsIgnoreCase(bookTitle) && parts.length > 9 && !parts[9].equals("Add review")) { // Assuming parts[9] contains the review
+                usernames.add(parts[0]);  // Assuming parts[0] contains the username
+            }
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    return String.join(", ", usernames);
+}
+
     
 
 
@@ -145,7 +177,7 @@ import java.util.stream.Collectors;
         private JTable table;
         private DefaultTableModel model;
       private JTextField statusField, startDateField, endDateField, userRatingField, userReviewField, titleField,authorField,ratingField,reviewField;
-    private JButton addButton, updateButton, deleteButton, generalDbButton;
+    // private JButton addButton, updateButton, deleteButton, generalDbButton;
     
         public MyPersonalTable(String username) {
             this.username = username;
@@ -172,22 +204,19 @@ import java.util.stream.Collectors;
             userRatingField = new JTextField(10);
             userReviewField = new JTextField(10);
             titleField = new JTextField(10);
-authorField = new JTextField(10);
-reviewField = new JTextField(10);
-ratingField = new JTextField(10);
+            authorField = new JTextField(10);
+            reviewField = new JTextField(10);
+            ratingField = new JTextField(10);
             // Buttons
-            addButton = new JButton("Add");
-            updateButton = new JButton("Update");
-            deleteButton = new JButton("Delete");
-            generalDbButton = new JButton("General DB");
-    
-            addButton.addActionListener(this::addBook);
-            updateButton.addActionListener(this::updateBook);
-            deleteButton.addActionListener(this::deleteBook);
-            generalDbButton.addActionListener(e -> openGeneralDatabase());
-    
+            // addButton = new JButton("Add");
+            // updateButton = new JButton("Update");
+            // deleteButton = new JButton("Delete");
+            // generalDbButton = new JButton("General DB");
+   
+      
             // Layout for controls
-            JPanel controlPanel = new JPanel();
+            JPanel controlPanel = createControlPanel(); // This calls your newly defined method
+            add(controlPanel, BorderLayout.SOUTH);
         controlPanel.setLayout(new GridLayout(0, 2, 10, 10));
             controlPanel.add(new JLabel("Status:"));
             controlPanel.add(statusField);
@@ -208,10 +237,12 @@ ratingField = new JTextField(10);
              controlPanel.add(new JLabel("Review:"));
             controlPanel.add(reviewField);
             
-            controlPanel.add(addButton);
-            controlPanel.add(updateButton);
-            controlPanel.add(deleteButton);
-            controlPanel.add(generalDbButton);
+            // controlPanel.add(addButton);
+            // controlPanel.add(updateButton);
+            // controlPanel.add(deleteButton);
+            // controlPanel.add(generalDbButton);
+        
+    
     
             add(controlPanel, BorderLayout.SOUTH);
     
@@ -226,6 +257,7 @@ ratingField = new JTextField(10);
                 model.addRow(book);
             }
         }
+
         // This should be in the part of your code where you transition to the personal table view
 public void openPersonalTable() {
     String currentUser = username;  // Ensure this method or variable correctly provides the non-null username
@@ -236,6 +268,74 @@ public void openPersonalTable() {
         System.out.println("Error: Username is null when trying to open Personal Table.");
     }
 }
+private JPanel createControlPanel() {
+    JPanel controlPanel = new JPanel(new BorderLayout());
+    controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Adds margin around the panel
+
+    // Search panel at the top
+    JPanel searchPanel = new JPanel(new BorderLayout());
+    JTextField searchField = new JTextField();
+    searchField.setPreferredSize(new Dimension(200, 24)); // Set the search bar size
+    searchPanel.add(new JLabel("Search:"), BorderLayout.WEST);
+    searchPanel.add(searchField, BorderLayout.CENTER);
+
+    // Button panel at the bottom
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Add spacing between buttons
+    JButton addButton = new JButton("Add");
+    JButton deleteButton = new JButton("Delete");
+    JButton updateButton = new JButton("Update");
+    JButton generalDbButton = new JButton("General DB");
+
+    // Set button dimensions for uniformity
+    Dimension buttonSize = new Dimension(100, 25);
+    addButton.setPreferredSize(buttonSize);
+    deleteButton.setPreferredSize(buttonSize);
+    updateButton.setPreferredSize(buttonSize);
+    generalDbButton.setPreferredSize(buttonSize);
+
+     
+    addButton.addActionListener(this::addBook);
+    updateButton.addActionListener(this::updateBook);
+    deleteButton.addActionListener(this::deleteBook);
+    generalDbButton.addActionListener(e -> openGeneralDatabase());
+
+    buttonPanel.add(addButton);
+    buttonPanel.add(deleteButton);
+    buttonPanel.add(updateButton);
+    buttonPanel.add(generalDbButton);
+    searchPanel.add(new JLabel("Search:"));
+    searchPanel.add(searchField);
+    controlPanel.add(searchPanel, BorderLayout.NORTH);
+
+    searchField.getDocument().addDocumentListener(new DocumentListener() {
+        public void changedUpdate(DocumentEvent e) {
+            filter(searchField.getText());
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            filter(searchField.getText());
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            filter(searchField.getText());
+        }
+
+        private void filter(String text) {
+            TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+            table.setRowSorter(sorter);
+            sorter.setRowFilter(RowFilter.regexFilter(text));
+        }
+    });
+
+
+    // Adding panels to the main control panel
+    controlPanel.add(searchPanel, BorderLayout.NORTH);
+    controlPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+    return controlPanel;
+}
+
+
 
     
 private void addBook(ActionEvent e) {
