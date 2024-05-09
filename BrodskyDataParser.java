@@ -1,16 +1,16 @@
-package RegistrationPage;
+
 
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
 public class BrodskyDataParser {
-    private static final String CSV_FILE_PATH = "RegistrationPage\\brodsky.csv";
+    private static final String CSV_FILE_PATH = "csvfiles\\brodsky.csv";
 
     Object[][] getData() {
         try {
             BufferedReader br = new BufferedReader(new FileReader(CSV_FILE_PATH));
-            BufferedWriter bw = new BufferedWriter(new FileWriter("generalDatabaseUpdated.csv"));
+            BufferedWriter bw = new BufferedWriter(new FileWriter("csvfiles\\generalDatabaseUpdated.csv"));
             bw.write("Title" + "Author" + "Rating" + "Review");
             ArrayList<Object[]> list = new ArrayList<>();
             String str;

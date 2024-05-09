@@ -1,6 +1,7 @@
-package RegistrationPage;
+
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,8 +28,8 @@ public class MainMenu extends JFrame implements ActionListener {
     getContentPane().setBackground(Color.GRAY);
 
     // Load images (assuming the images are in the same directory as the Java class)
-    ImageIcon generalIcon = new ImageIcon("RegistrationPage\\personaldatabase.png");
-    ImageIcon personalIcon = new ImageIcon("RegistrationPage\\personaldatabase.png");
+    ImageIcon generalIcon = new ImageIcon("images\\personaldatabase.png");
+    ImageIcon personalIcon = new ImageIcon("images\\personaldatabase.png");
 
     Image img = generalIcon.getImage();
 

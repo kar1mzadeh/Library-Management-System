@@ -1,4 +1,4 @@
-package RegistrationPage;
+
 
 
 import javax.swing.*;

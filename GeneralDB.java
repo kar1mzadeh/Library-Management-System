@@ -1,4 +1,4 @@
-package RegistrationPage;
+
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -6,6 +6,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -56,7 +57,6 @@ class MyGeneraltable extends JFrame {
         add(new JScrollPane(table), BorderLayout.CENTER);
         add(createControlPanel(), BorderLayout.SOUTH);
         setupTableListeners();
-setupTableListeners1();
         setVisible(true);
 
         
@@ -81,9 +81,6 @@ setupTableListeners1();
                 }
             }
         });
-    }
-    private void setupTableListeners1() {
-        // Existing listeners
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 int row = table.rowAtPoint(e.getPoint());
@@ -97,6 +94,7 @@ setupTableListeners1();
             }
         });
     }
+   
     private void showReviewDetails(String bookTitle) {
         // Fetch reviews based on the book title
         ArrayList<String[]> reviews = PersonalDB.getReviewsForBook(bookTitle);
@@ -291,7 +289,7 @@ setupTableListeners1();
    
 
     private void loadData() {
-        File file = new File("generalDatabaseUpdated.csv");
+        File file = new File("csvfiles\\generalDatabaseUpdated.csv");
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -332,7 +330,7 @@ setupTableListeners1();
     
     
     private void updateCSV() {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("generalDatabaseUpdated.csv"))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("csvfiles\\generalDatabaseUpdated.csv"))) {
             bw.write("Title,Author,Rating,Review\n"); // Write header
             for (Object[] row : dataList) {
                 bw.write(String.format("%s,%s,%s,%s\n", row[0], row[1], row[2], row[3]));

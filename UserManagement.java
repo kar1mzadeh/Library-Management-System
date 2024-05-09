@@ -1,8 +1,9 @@
-package RegistrationPage;
+
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -62,7 +63,7 @@ class UserManagementTable extends JFrame {
 
     Object[][] getData() {
         try {
-            BufferedReader br = new BufferedReader(new FileReader("users.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("csvfiles\\users.csv"));
             ArrayList<Object[]> list = new ArrayList<>();
             String str;
             while ((str = br.readLine()) != null) {
@@ -101,7 +102,7 @@ class UserManagementTable extends JFrame {
 
     private void saveDataToFile(DefaultTableModel model) {
         try {
-            PrintWriter writer = new PrintWriter(new FileWriter("users.csv"));
+            PrintWriter writer = new PrintWriter(new FileWriter("csvfiles\\users.csv"));
             for (int i = 0; i < model.getRowCount(); i++) {
                 StringBuilder sb = new StringBuilder();
                 for (int j = 0; j < model.getColumnCount(); j++) {

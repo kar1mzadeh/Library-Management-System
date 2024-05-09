@@ -1,5 +1,6 @@
-package RegistrationPage;
+
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,7 +27,7 @@ public class LoginFrame extends JFrame implements ActionListener {
         getContentPane().setBackground(Color.GRAY);
 
         // Load the image
-        ImageIcon imageIcon = new ImageIcon("RegistrationPage\\library.png");
+        ImageIcon imageIcon = new ImageIcon("images\\library.png");
         Image image = imageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
         ImageIcon scaledIcon = new ImageIcon(image);
         // Create a label to display the image
@@ -79,7 +80,7 @@ public class LoginFrame extends JFrame implements ActionListener {
         add(registerButton);
 
         // Create users.csv file if it doesn't exist
-        File file = new File("users.csv");
+        File file = new File("csvfiles\\users.csv");
         if (!file.exists()) {
             try {
                 file.createNewFile();
@@ -114,7 +115,7 @@ public class LoginFrame extends JFrame implements ActionListener {
     private boolean authenticate(String username, String password) {
 
         
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("users.csv"))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("csvfiles\\users.csv"))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 String[] parts = line.split(",");

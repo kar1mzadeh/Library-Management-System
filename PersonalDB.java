@@ -1,4 +1,4 @@
-package RegistrationPage;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
     public class PersonalDB {
-        private static final String PERSONAL_BOOKS_FILE = "personalDatabaseUpdated.csv";
+        private static final String PERSONAL_BOOKS_FILE = "csvfiles\\personalDatabaseUpdated.csv";
     
     
         public static ArrayList<String[]> loadPersonalBooks(String username) {
@@ -120,7 +120,7 @@ import java.util.stream.Collectors;
 }
 public static String getUsernamesWhoReviewedBook(String bookTitle) {
     ArrayList<String> usernames = new ArrayList<>();
-    try (BufferedReader reader = new BufferedReader(new FileReader("personalDatabaseUpdated.csv"))) {
+    try (BufferedReader reader = new BufferedReader(new FileReader("csvfiles\\personalDatabaseUpdated.csv"))) {
         String line;
         while ((line = reader.readLine()) != null) {
             String[] parts = line.split(",");

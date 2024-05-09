@@ -1,4 +1,4 @@
-package RegistrationPage;
+
     
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -23,7 +23,7 @@ public class RegisterPage extends JFrame implements ActionListener {
         getContentPane().setBackground(Color.GRAY);
 
           // Load the image
-    ImageIcon imageIcon = new ImageIcon("RegistrationPage\\library.png");
+    ImageIcon imageIcon = new ImageIcon("images\\library.png");
     Image image = imageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
     ImageIcon scaledIcon = new ImageIcon(image);
     // Create a label to display the image
@@ -141,8 +141,8 @@ public class RegisterPage extends JFrame implements ActionListener {
         }
 
         // Proceed with user registration
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("users.csv"));
-                BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("users.csv", true))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("csvfiles\\users.csv"));
+                BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("csvfiles\\users.csv", true))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 String[] parts = line.split(",");
