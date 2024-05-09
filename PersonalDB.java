@@ -17,12 +17,40 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
     public class PersonalDB {
         private static final String PERSONAL_BOOKS_FILE = "csvfiles\\personalDatabaseUpdated.csv";
-    
+
+        public static String getRatingDetails(String bookTitle) {
+            ArrayList<Double> ratings = new ArrayList<>();
+            try (BufferedReader reader = new BufferedReader(new FileReader(PERSONAL_BOOKS_FILE))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(",");
+                    // Assuming the book title is at index 1 and the user rating is at index 8
+                    if (parts[1].equalsIgnoreCase(bookTitle) && !parts[9].equals("Add rating")) {
+                        try {
+                            double rating = Double.parseDouble(parts[9]);
+                            ratings.add(rating);
+                        } catch (NumberFormatException e) {
+                            // Handle case where the rating is not a number
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        
+            if (ratings.isEmpty()) {
+                return "No rating";
+            } else {
+                double average = ratings.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+                return String.format("%.2f (%d)", average, ratings.size());
+            }
+        }
     
         public static ArrayList<String[]> loadPersonalBooks(String username) {
             ArrayList<String[]> books = new ArrayList<>();
@@ -124,14 +152,14 @@ public static String getUsernamesWhoReviewedBook(String bookTitle) {
         String line;
         while ((line = reader.readLine()) != null) {
             String[] parts = line.split(",");
-            if (parts[1].equalsIgnoreCase(bookTitle) && parts.length > 9 && !parts[9].equals("Add review")) { // Assuming parts[9] contains the review
+            if (parts[1].equalsIgnoreCase(bookTitle) && parts.length > 9 && !parts[10].equals("Add review")) { // Assuming parts[9] contains the review
                 usernames.add(parts[0]);  // Assuming parts[0] contains the username
             }
         }
     } catch (IOException e) {
         e.printStackTrace();
     }
-    return String.join(", ", usernames);
+    return String.join(" · ", usernames);
 }
 
     
@@ -168,6 +196,23 @@ public static String getUsernamesWhoReviewedBook(String bookTitle) {
                 ex.printStackTrace();
             }
         }
+
+        public static String fetchUserReview(String username, String bookTitle) {
+            File file = new File(PERSONAL_BOOKS_FILE);
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(",");
+                    // Assuming the format is Username,BookTitle,Rating,Review,...
+                    if (parts.length > 3 && parts[0].equals(username) && parts[1].equals(bookTitle)) {
+                        return "Rating: " + parts[2] + ", Review: " + parts[3];  // Customize as needed
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println("Error reading file: " + e.getMessage());
+            }
+            return "No review found.";
+        }
         
     }
 
@@ -177,79 +222,96 @@ public static String getUsernamesWhoReviewedBook(String bookTitle) {
         private JTable table;
         private DefaultTableModel model;
       private JTextField statusField, startDateField, endDateField, userRatingField, userReviewField, titleField,authorField,ratingField,reviewField;
-    // private JButton addButton, updateButton, deleteButton, generalDbButton;
-    
-        public MyPersonalTable(String username) {
-            this.username = username;
-    System.out.println("Received username in MyPersonalTable: " + username);
-    setTitle("Personal Database - " + username);
-            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            setSize(1000, 600);
-            setLocationRelativeTo(null);
 
-            
     
-            // Table Model Setup
-            model = new DefaultTableModel();
-            model.setColumnIdentifiers(new String[]{"Title", "Author", "Rating", "Review", "Status", "Time Spent", "Start Date", "End Date", "User Rating", "User Review"});
-            table = new JTable(model);
-            table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            JScrollPane scrollPane = new JScrollPane(table);
-            add(scrollPane, BorderLayout.CENTER);
+      public MyPersonalTable(String username) {
+        this.username = username;
+        System.out.println("Received username in MyPersonalTable: " + username);
+        setTitle("Personal Database - " + username);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1000, 600);
+        setLocationRelativeTo(null);
     
-            // Input fields
-            statusField = new JTextField(10);
-            startDateField = new JTextField(10);
-            endDateField = new JTextField(10);
-            userRatingField = new JTextField(10);
-            userReviewField = new JTextField(10);
-            titleField = new JTextField(10);
-            authorField = new JTextField(10);
-            reviewField = new JTextField(10);
-            ratingField = new JTextField(10);
-            // Buttons
-            // addButton = new JButton("Add");
-            // updateButton = new JButton("Update");
-            // deleteButton = new JButton("Delete");
-            // generalDbButton = new JButton("General DB");
-   
-      
-            // Layout for controls
-            JPanel controlPanel = createControlPanel(); // This calls your newly defined method
-            add(controlPanel, BorderLayout.SOUTH);
-        controlPanel.setLayout(new GridLayout(0, 2, 10, 10));
-            controlPanel.add(new JLabel("Status:"));
-            controlPanel.add(statusField);
-            controlPanel.add(new JLabel("StartDate:"));
-            controlPanel.add(startDateField);
-            controlPanel.add(new JLabel("EndDate:"));
-            controlPanel.add(endDateField);
-            controlPanel.add(new JLabel("UserRating:"));
-            controlPanel.add(userRatingField);
-            controlPanel.add(new JLabel("UserReview:"));
-            controlPanel.add(userReviewField);
-            controlPanel.add(new JLabel("Title:"));
-            controlPanel.add(titleField); 
-            controlPanel.add(new JLabel("Author"));
-            controlPanel.add(authorField); 
-            controlPanel.add(new JLabel("Rating:"));
-            controlPanel.add(ratingField);
-             controlPanel.add(new JLabel("Review:"));
-            controlPanel.add(reviewField);
-            
-            // controlPanel.add(addButton);
-            // controlPanel.add(updateButton);
-            // controlPanel.add(deleteButton);
-            // controlPanel.add(generalDbButton);
+        // Table Model Setup with validation for userRating
+        model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // Make only the userRating and userReview columns editable
+                return column == 8 || column == 9;
+            }
+    
+            @Override
+            public void setValueAt(Object aValue, int row, int column) {
+                if (column == 8) { // userRating column
+                    try {
+                        double rating = Double.parseDouble(aValue.toString());
+                        if (rating >= 1.0 && rating <= 5.0) {
+                            super.setValueAt(aValue, row, column);
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Rating must be between 1 and 5.");
+                        }
+                    } catch (NumberFormatException e) {
+                        JOptionPane.showMessageDialog(null, "Invalid input: Please enter a valid number.");
+                    }
+                } else {
+                    super.setValueAt(aValue, row, column);
+                }
+            }
+        };
+        model.setColumnIdentifiers(new String[]{"Title", "Author", "Rating", "Review", "Status", "Time Spent", "Start Date", "End Date", "User Rating", "User Review"});
         
+        table = new JTable(model);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     
+        // Setting a JComboBox as the editor for the userRating column
+        String[] validRatings = {"1", "2", "3", "4", "5"};
+        JComboBox<String> ratingEditor = new JComboBox<>(validRatings);
+        table.getColumnModel().getColumn(8).setCellEditor(new DefaultCellEditor(ratingEditor));
     
-            add(controlPanel, BorderLayout.SOUTH);
+        JScrollPane scrollPane = new JScrollPane(table);
+        add(scrollPane, BorderLayout.CENTER);
     
-            loadBooks();  // Load the books into the table
-            setVisible(true);
-            setupTableListeners();
-        }
+        // Input fields setup
+        titleField = new JTextField(10);
+        authorField = new JTextField(10);
+        reviewField = new JTextField(10);
+        ratingField = new JTextField(10);
+        statusField = new JTextField(10);
+        startDateField = new JTextField(10);
+        endDateField = new JTextField(10);
+        userRatingField = new JTextField(10);
+        userReviewField = new JTextField(10);
+    
+        // Layout for controls
+        JPanel controlPanel = createControlPanel(); // This calls your newly defined method
+        add(controlPanel, BorderLayout.SOUTH);
+        controlPanel.setLayout(new GridLayout(0, 2, 10, 10));
+        controlPanel.add(new JLabel("Title:"));
+        controlPanel.add(titleField);
+        controlPanel.add(new JLabel("Author"));
+        controlPanel.add(authorField);
+        controlPanel.add(new JLabel("Rating:"));
+        controlPanel.add(ratingField);
+        controlPanel.add(new JLabel("Review:"));
+        controlPanel.add(reviewField);
+        controlPanel.add(new JLabel("Status:"));
+        controlPanel.add(statusField);
+        controlPanel.add(new JLabel("StartDate:"));
+        controlPanel.add(startDateField);
+        controlPanel.add(new JLabel("EndDate:"));
+        controlPanel.add(endDateField);
+        controlPanel.add(new JLabel("UserRating:"));
+        controlPanel.add(userRatingField);
+        controlPanel.add(new JLabel("UserReview:"));
+        controlPanel.add(userReviewField);
+    
+        add(controlPanel, BorderLayout.SOUTH);
+    
+        loadBooks();  // Load the books into the table
+        setVisible(true);
+        setupTableListeners();
+    }
+    
     
         private void loadBooks() {
             ArrayList<String[]> books = PersonalDB.loadPersonalBooks(username);

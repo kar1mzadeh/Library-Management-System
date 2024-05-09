@@ -44,6 +44,7 @@ class MyGeneraltable extends JFrame {
                 return false;
             }
         };
+        
 
         table = new JTable(defaultTableModel);
     table.setAutoCreateRowSorter(true);  // Set up the table with a row sorter
@@ -61,6 +62,14 @@ class MyGeneraltable extends JFrame {
 
         
     }
+    // public void displayRatings() {
+    //     for (int i = 0; i < defaultTableModel.getRowCount(); i++) {
+    //         String bookTitle = defaultTableModel.getValueAt(i, 0).toString();
+    //         Map<String, String> ratings = PersonalDB.getBookRatings(bookTitle);
+    //         String ratingDisplay = ratings.get("average") + " (" + ratings.get("count") + ")";
+    //         defaultTableModel.setValueAt(ratingDisplay, i, 2);  // Assuming rating is in column 2
+    //     }
+    // }
 
 
     private void setupTableListeners() {
@@ -95,6 +104,7 @@ class MyGeneraltable extends JFrame {
         });
     }
    
+    
     private void showReviewDetails(String bookTitle) {
         // Fetch reviews based on the book title
         ArrayList<String[]> reviews = PersonalDB.getReviewsForBook(bookTitle);
@@ -288,24 +298,32 @@ class MyGeneraltable extends JFrame {
 
    
 
-    private void loadData() {
-        File file = new File("csvfiles\\generalDatabaseUpdated.csv");
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 4) {  // Assuming columns are Title, Author, Rating, Review
-                    String[] dataRow = Arrays.copyOf(parts, 4);
-                    // Fetch usernames who reviewed this book
-                    String usernames = PersonalDB.getUsernamesWhoReviewedBook(parts[0]);  // Assuming parts[0] is the book title
-                    dataRow[3] = usernames.isEmpty() ? "No reviews" : usernames;
-                    dataList.add(dataRow);
-                }
+   private void loadData() {
+    File file = new File("csvfiles\\generalDatabaseUpdated.csv");
+    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] parts = line.split(",");
+            if (parts.length == 4) {  // Assuming columns are Title, Author, Rating, Review
+                String[] dataRow = Arrays.copyOf(parts, 4);
+
+                // Fetch usernames who reviewed this book and the rating details
+                String usernames = PersonalDB.getUsernamesWhoReviewedBook(parts[0]);  // Assuming parts[0] is the book title
+                String ratingDetails = PersonalDB.getRatingDetails(parts[0]);  // Also fetch the rating details
+                
+                // Update the review column to show usernames if available
+                dataRow[3] = usernames.isEmpty() ? "No reviews" : usernames;
+                // Update the rating column to show average rating and count
+                dataRow[2] = ratingDetails.isEmpty() ? "No rating" : ratingDetails;
+
+                dataList.add(dataRow);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+    } catch (IOException e) {
+        e.printStackTrace();
     }
+}
+
    
     
     
