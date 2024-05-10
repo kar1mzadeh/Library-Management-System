@@ -3,6 +3,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -262,7 +263,9 @@ public static String getUsernamesWhoReviewedBook(String bookTitle) {
         private static String username;
         private JTable table;
         private DefaultTableModel model;
-      private JTextField statusField, userRatingField, userReviewField, titleField,authorField,ratingField,reviewField, timeSpentField;
+        private JComboBox<String> statusComboBox;
+        private JComboBox<String> userRatingField;
+      private JTextField userReviewField, titleField,authorField,ratingField,reviewField, timeSpentField;
 private JFormattedTextField startDateField, endDateField;
     
       public MyPersonalTable(String username) {
@@ -303,12 +306,17 @@ private JFormattedTextField startDateField, endDateField;
         
         table = new JTable(model);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        String[] statusOptions = {"Not Started", "Ongoing", "Completed"};
+        statusComboBox = new JComboBox<>(statusOptions);
+
     
         // Setting a JComboBox as the editor for the userRating column
         String[] validRatings = {"1", "2", "3", "4", "5"};
         JComboBox<String> ratingEditor = new JComboBox<>(validRatings);
-        table.getColumnModel().getColumn(8).setCellEditor(new DefaultCellEditor(ratingEditor));
-    
+         table.getColumnModel().getColumn(8).setCellEditor(new DefaultCellEditor(ratingEditor));
+        userRatingField = new JComboBox<>(new String[]{"1", "2", "3", "4", "5"});
+        TableColumn ratingColumn = table.getColumnModel().getColumn(8);
+        ratingColumn.setCellEditor(new DefaultCellEditor(userRatingField));
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
         
@@ -317,10 +325,12 @@ private JFormattedTextField startDateField, endDateField;
         authorField = new JTextField(10);
         reviewField = new JTextField(10);
         ratingField = new JTextField(10);
-        statusField = new JTextField(10);
+        TableColumn statusColumn = table.getColumnModel().getColumn(4);
+        statusColumn.setCellEditor(new DefaultCellEditor(statusComboBox));
         // startDateField = new JFormattedTextField();
         // endDateField = new JFormattedTextField(10);
-        userRatingField = new JTextField(10);
+        TableColumn userRatingColumn = table.getColumnModel().getColumn(8);
+      userRatingColumn.setCellEditor(new DefaultCellEditor(userRatingField));
         userReviewField = new JTextField(10);
     
         // Layout for controls
@@ -336,7 +346,7 @@ private JFormattedTextField startDateField, endDateField;
         controlPanel.add(new JLabel("Review:"));
         controlPanel.add(reviewField);
         controlPanel.add(new JLabel("Status:"));
-        controlPanel.add(statusField);
+        controlPanel.add(statusComboBox);
        
         controlPanel.add(new JLabel("UserRating:"));
         controlPanel.add(userRatingField);
@@ -655,10 +665,12 @@ private void addBook(ActionEvent e) {
             authorField.setText(model.getValueAt(row, 1).toString());
             ratingField.setText(model.getValueAt(row, 2).toString());
             reviewField.setText(model.getValueAt(row, 3).toString());
-            statusField.setText(model.getValueAt(row, 4).toString());
+            String status = model.getValueAt(row, 4).toString();
+    statusComboBox.setSelectedItem(status);
             startDateField.setText(model.getValueAt(row, 6).toString());
             endDateField.setText(model.getValueAt(row, 7).toString());
-            userRatingField.setText(model.getValueAt(row, 8).toString());
+            String userRating = model.getValueAt(row, 8).toString();
+            userRatingField.setSelectedItem(userRating);
             userReviewField.setText(model.getValueAt(row, 9).toString());
         }
         
@@ -667,10 +679,10 @@ private void addBook(ActionEvent e) {
             int selectedRow = table.getSelectedRow();
             if (selectedRow >= 0) {
                 // Ensure that fields are correctly mapped to table columns
-                model.setValueAt(statusField.getText(), selectedRow, 4);
+                model.setValueAt(statusComboBox.getSelectedItem().toString(), selectedRow, 4);
                 model.setValueAt(startDateField.getText(), selectedRow, 6);
                 model.setValueAt(endDateField.getText(), selectedRow, 7);
-                model.setValueAt(userRatingField.getText(), selectedRow, 8);
+                model.setValueAt(userRatingField.getSelectedItem().toString(), selectedRow, 8);
                 model.setValueAt(userReviewField.getText(), selectedRow, 9);
         
                 // Update the data in the CSV (requires re-writing or better file handling)
