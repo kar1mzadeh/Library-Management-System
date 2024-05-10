@@ -1,6 +1,7 @@
 
 
 import javax.swing.*;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -52,25 +53,64 @@ class MyGeneraltable extends JFrame {
     table.setRowSorter(sorter);  // Ensure this is explicitly set, even if auto create is true
 
     // Attaching the mouse listener to the table header for sorting
-    table.getTableHeader().addMouseListener(new HeaderMouseListener());
     table.getTableHeader().setFont(new Font(table.getFont().getFontName(), Font.BOLD, 16));
 
         add(new JScrollPane(table), BorderLayout.CENTER);
         add(createControlPanel(), BorderLayout.SOUTH);
         setupTableListeners();
         setVisible(true);
+    setupTable();
 
         
     }
-    // public void displayRatings() {
-    //     for (int i = 0; i < defaultTableModel.getRowCount(); i++) {
-    //         String bookTitle = defaultTableModel.getValueAt(i, 0).toString();
-    //         Map<String, String> ratings = PersonalDB.getBookRatings(bookTitle);
-    //         String ratingDisplay = ratings.get("average") + " (" + ratings.get("count") + ")";
-    //         defaultTableModel.setValueAt(ratingDisplay, i, 2);  // Assuming rating is in column 2
-    //     }
-    // }
+  
+    
+    private void setupTable() {
+        table.setAutoCreateRowSorter(true);
+        Font headerFont = table.getTableHeader().getFont();
+        Font newHeaderFont = headerFont.deriveFont(Font.BOLD, 16);
+        table.getTableHeader().setFont(newHeaderFont);
 
+        table.getTableHeader().addMouseListener(new HeaderMouseListener());
+    }
+
+    private class HeaderMouseListener extends MouseAdapter {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            JTableHeader header = (JTableHeader) e.getSource();
+            TableColumnModel columnModel = header.getColumnModel();
+            int viewColumn = columnModel.getColumnIndexAtX(e.getX());
+            int column = columnModel.getColumn(viewColumn).getModelIndex();
+            DefaultTableModel defaultTableModel = new DefaultTableModel();
+            String columnName = defaultTableModel.getColumnName(column);
+
+            int clickCount = columnClickCount.getOrDefault(columnName, 0);
+            clickCount++;
+            columnClickCount.put(columnName, clickCount);
+
+            TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+            ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>();
+
+            switch (clickCount % 3) {
+                case 0: // Original form
+                    columnClickCount.put(columnName, 0);
+                    sorter.setSortKeys(null); // Clear sorting
+                    break;
+                case 1: // Ascending order
+                    sortKeys.add(new RowSorter.SortKey(column, SortOrder.ASCENDING));
+                    break;
+                case 2: // Descending order
+                    sortKeys.add(new RowSorter.SortKey(column, SortOrder.DESCENDING));
+                    break;
+            }
+
+            sorter.setSortKeys(sortKeys);
+            sorter.sort();
+        }
+    }
+   
+    
+ 
 
     private void setupTableListeners() {
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -377,11 +417,6 @@ class MyGeneraltable extends JFrame {
         e.printStackTrace();
     }
 }
-
-   
-    
-    
-
     private void loadBooks() {
         ArrayList<String[]> books = PersonalDB.loadPersonalBooks(username);
         DefaultTableModel model = new DefaultTableModel();
@@ -399,8 +434,6 @@ class MyGeneraltable extends JFrame {
         setTitle("Personal Database - " + username); // Update window title
         // Optionally, reset any user-specific settings or UI components
     }
-    
-    
     private void updateCSV() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("csvfiles\\generalDatabaseUpdated.csv"))) {
             bw.write("Title,Author,Rating,Review\n"); // Write header
@@ -411,67 +444,6 @@ class MyGeneraltable extends JFrame {
             ex.printStackTrace();
         }
     }
-
-    
-
-    private class HeaderMouseListener extends MouseAdapter {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            int column = table.columnAtPoint(e.getPoint());
-            TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
-            ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>(sorter.getSortKeys());
-    
-            if (e.isControlDown()) {
-                // If Control is held, add or toggle the sort key for the column
-                Optional<RowSorter.SortKey> existingKey = sortKeys.stream()
-                    .filter(key -> key.getColumn() == column)
-                    .findFirst();
-    
-                if (existingKey.isPresent()) {
-                    // If already sorted, toggle through the states
-                    SortOrder nextOrder = nextSortOrder(existingKey.get().getSortOrder());
-                    if (nextOrder == null) {
-                        sortKeys.remove(existingKey.get());  // Remove sorting if reset to null
-                    } else {
-                        sortKeys.set(sortKeys.indexOf(existingKey.get()), new RowSorter.SortKey(column, nextOrder));
-                    }
-                } else {
-                    // If not sorted, add a new key for ascending
-                    sortKeys.add(new RowSorter.SortKey(column, SortOrder.ASCENDING));
-                }
-            } else {
-                // No Control means sorting by single column
-                SortOrder currentOrder = sorter.getSortKeys().stream()
-                    .filter(key -> key.getColumn() == column)
-                    .findFirst()
-                    .map(RowSorter.SortKey::getSortOrder)
-                    .orElse(null);
-    
-                sortKeys.clear(); // Clear existing sort keys
-                SortOrder nextOrder = nextSortOrder(currentOrder);
-                if (nextOrder != null) {
-                    sortKeys.add(new RowSorter.SortKey(column, nextOrder));
-                }
-            }
-    
-            sorter.setSortKeys(sortKeys);
-            sorter.sort();
-        }
-    
-        private SortOrder nextSortOrder(SortOrder currentOrder) {
-            if (currentOrder == null || currentOrder == SortOrder.DESCENDING) {
-                return SortOrder.ASCENDING;
-            } else if (currentOrder == SortOrder.ASCENDING) {
-                return SortOrder.DESCENDING;
-            } else {
-                return null;
-            }
-        }
-    }
-    
-
-    
-
     public static void main(String[] args) {
         new MyGeneraltable(username);
     }

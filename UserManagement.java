@@ -16,6 +16,8 @@ public class UserManagement {
 
     public static void main(String[] args) {
         UserManagementTable userManagementTable = new UserManagementTable("admin");
+        userManagementTable.setLocationRelativeTo(null); // Center on screen
+        userManagementTable.setVisible(true);
     }
 }
 
@@ -95,9 +97,14 @@ class UserManagementTable extends JFrame {
                 model.removeRow(i);
                 break;
             }
+
         }
+
       //  PersonalDB.deleteUsersPersonalLibrary(username);
         saveDataToFile(model);
+        if (userManagementPanel != null) {
+            userManagementPanel.dispose(); // Dispose the panel if it exists
+        }
     }
 
     private void saveDataToFile(DefaultTableModel model) {

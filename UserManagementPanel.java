@@ -63,16 +63,17 @@ public class UserManagementPanel extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == deleteButton) {
-            this.dispose();
             String selectedUsername = usernameField.getText();
             if (!selectedUsername.isEmpty()) {
                 UserManagementTable userManagementTable = new UserManagementTable(selectedUsername);
                 userManagementTable.deleteUser(selectedUsername);
+                this.dispose();
             }
         } else if (e.getSource() == generalDbButton) {
             this.dispose();
-            // MyGeneraltable = new MyGeneraltable(username);
-            // PanelForGeneralDB.disabled();    
+           MyGeneraltable generalTable = new MyGeneraltable(username);
+            generalTable.setVisible(true); // Make sure to set the visibility of your General DB table
+            this.dispose();   
         }
     }
 }
