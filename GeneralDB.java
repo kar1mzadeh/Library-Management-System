@@ -108,18 +108,72 @@ class MyGeneraltable extends JFrame {
     private void showReviewDetails(String bookTitle) {
         // Fetch reviews based on the book title
         ArrayList<String[]> reviews = PersonalDB.getReviewsForBook(bookTitle);
-        JDialog reviewDialog = new JDialog();
-        reviewDialog.setTitle("Reviews for " + bookTitle);
-        reviewDialog.setSize(300, 400);
+        JDialog reviewDialog = new JDialog(this, "Reviews for " + bookTitle, true); // Make the dialog modal
+        reviewDialog.setSize(400, 400);
         reviewDialog.setLayout(new BorderLayout());
         DefaultListModel<String> listModel = new DefaultListModel<>();
         for (String[] review : reviews) {
             listModel.addElement(review[0] + " - " + review[1] + " - " + review[2]); // username - rating - review
         }
+    
         JList<String> reviewList = new JList<>(listModel);
         reviewDialog.add(new JScrollPane(reviewList), BorderLayout.CENTER);
+    
+        if ("admin".equals(username)) {  // Check if the user is an admin
+            JButton deleteButton = new JButton("Delete Review");
+            deleteButton.addActionListener(e -> {
+                if (!reviewList.isSelectionEmpty()) {
+                    String selectedReview = reviewList.getSelectedValue();
+                    if (deleteReview(selectedReview, bookTitle)) {
+                        listModel.removeElement(selectedReview);  // Remove from list model
+                        JOptionPane.showMessageDialog(reviewDialog, "Review deleted successfully.");
+                    } else {
+                        JOptionPane.showMessageDialog(reviewDialog, "Failed to delete review.");
+                    }
+                }
+            });
+            reviewDialog.add(deleteButton, BorderLayout.SOUTH);
+        }
+    
         reviewDialog.setVisible(true);
     }
+    private boolean deleteReview(String reviewInfo, String bookTitle) {
+        String username = reviewInfo.split(" - ")[0];  // Extract username from the review info string
+        return PersonalDB.deleteUserReview(username, bookTitle);
+    }
+    public static boolean deleteUserReview(String username, String bookTitle) {
+        // Implementation depends on your storage setup
+        // This is a simple example assuming a CSV file and immediate deletion
+        ArrayList<String[]> updatedReviews = new ArrayList<>();
+        boolean isDeleted = false;
+        try (BufferedReader reader = new BufferedReader(new FileReader("csvfiles\\personalDatabaseUpdated.csv"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts[0].equals(username) && parts[1].equalsIgnoreCase(bookTitle)) {
+                    // Change the review and rating to indicate deletion
+                    parts[9] = "Deleted";  // Assuming review is at index 9
+                    isDeleted = true;
+                }
+                updatedReviews.add(parts);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    
+        // Rewrite the updated reviews back to the file
+        try (PrintWriter writer = new PrintWriter(new FileWriter("csvfiles\\personalDatabaseUpdated.csv"))) {
+            for (String[] parts : updatedReviews) {
+                writer.println(String.join(",", parts));
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+        return isDeleted;
+    }
+            
     
     private JPanel createControlPanel() {
         JPanel controlPanel = new JPanel();
@@ -207,7 +261,7 @@ class MyGeneraltable extends JFrame {
             String rating = (String) table.getValueAt(selectedRow, 2);
             String review = (String) table.getValueAt(selectedRow, 3);
     
-            String[] bookDetails = {title, author, rating, review, "Not Started", "0", "N/A", "N/A", "Add rating", "Add review"};
+            String[] bookDetails = {title, author, rating, review, "Not Started", "0", "", "", "Add rating", "Add review"};
             PersonalDB.addBookToPersonalDB(username, bookDetails);
         } else {
             JOptionPane.showMessageDialog(this, "No book selected!");
@@ -364,7 +418,6 @@ class MyGeneraltable extends JFrame {
         @Override
         public void mouseClicked(MouseEvent e) {
             int column = table.columnAtPoint(e.getPoint());
-            String columnName = table.getColumnName(column);
             TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
             ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>(sorter.getSortKeys());
     

@@ -4,27 +4,66 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
-
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
 
     public class PersonalDB {
         private static final String PERSONAL_BOOKS_FILE = "csvfiles\\personalDatabaseUpdated.csv";
 
+        
+         public static boolean deleteUserReview(String username, String bookTitle) {
+        // Implementation depends on your storage setup
+        // This is a simple example assuming a CSV file and immediate deletion
+        ArrayList<String[]> updatedReviews = new ArrayList<>();
+        boolean isDeleted = false;
+        try (BufferedReader reader = new BufferedReader(new FileReader("csvfiles\\personalDatabaseUpdated.csv"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts[0].equals(username) && parts[1].equalsIgnoreCase(bookTitle)) {
+                    // Change the review and rating to indicate deletion
+                    parts[10] = "Deleted";  // Assuming review is at index 9
+                    isDeleted = true;
+                }
+                updatedReviews.add(parts);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    
+        // Rewrite the updated reviews back to the file
+        try (PrintWriter writer = new PrintWriter(new FileWriter("csvfiles\\personalDatabaseUpdated.csv"))) {
+            for (String[] parts : updatedReviews) {
+                writer.println(String.join(",", parts));
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+        return isDeleted;
+    }
         public static String getRatingDetails(String bookTitle) {
+            
             ArrayList<Double> ratings = new ArrayList<>();
             try (BufferedReader reader = new BufferedReader(new FileReader(PERSONAL_BOOKS_FILE))) {
                 String line;
@@ -88,9 +127,11 @@ import java.util.stream.Collectors;
             if (bookDetails.length < 10) {
                 String[] completeDetails = new String[10];
                 System.arraycopy(bookDetails, 0, completeDetails, 0, bookDetails.length);
-                Arrays.fill(completeDetails, bookDetails.length, 10, "N/A");
+                Arrays.fill(completeDetails, bookDetails.length, 10, "");
                 completeDetails[4] = "Not Started";
                 completeDetails[5] = "0";
+                completeDetails[6]="";
+                completeDetails[7]="";
                 completeDetails[8] = "Add rating";
                 completeDetails[9] = "Add review";
                 books.add(completeDetails);
@@ -221,8 +262,8 @@ public static String getUsernamesWhoReviewedBook(String bookTitle) {
         private static String username;
         private JTable table;
         private DefaultTableModel model;
-      private JTextField statusField, startDateField, endDateField, userRatingField, userReviewField, titleField,authorField,ratingField,reviewField;
-
+      private JTextField statusField, userRatingField, userReviewField, titleField,authorField,ratingField,reviewField, timeSpentField;
+private JFormattedTextField startDateField, endDateField;
     
       public MyPersonalTable(String username) {
         this.username = username;
@@ -270,15 +311,15 @@ public static String getUsernamesWhoReviewedBook(String bookTitle) {
     
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
-    
+        
         // Input fields setup
         titleField = new JTextField(10);
         authorField = new JTextField(10);
         reviewField = new JTextField(10);
         ratingField = new JTextField(10);
         statusField = new JTextField(10);
-        startDateField = new JTextField(10);
-        endDateField = new JTextField(10);
+        // startDateField = new JFormattedTextField();
+        // endDateField = new JFormattedTextField(10);
         userRatingField = new JTextField(10);
         userReviewField = new JTextField(10);
     
@@ -296,30 +337,157 @@ public static String getUsernamesWhoReviewedBook(String bookTitle) {
         controlPanel.add(reviewField);
         controlPanel.add(new JLabel("Status:"));
         controlPanel.add(statusField);
-        controlPanel.add(new JLabel("StartDate:"));
-        controlPanel.add(startDateField);
-        controlPanel.add(new JLabel("EndDate:"));
-        controlPanel.add(endDateField);
+       
         controlPanel.add(new JLabel("UserRating:"));
         controlPanel.add(userRatingField);
         controlPanel.add(new JLabel("UserReview:"));
         controlPanel.add(userReviewField);
+
+        // try {
+    
+            startDateField = new JFormattedTextField();
+            endDateField = new JFormattedTextField();
+    
+            startDateField.setColumns(10);  // Set the size of the text field
+            endDateField.setColumns(10);    // Set the size of the text field
+    
+            // Add the fields to your layout (adjust according to your actual layout setup)
+            controlPanel.add(new JLabel("StartDate:"));
+            controlPanel.add(startDateField);
+            controlPanel.add(new JLabel("EndDate:"));
+            controlPanel.add(endDateField);
+          // Adjust this to add to your actual frame or panel
+    
+        // } catch (ParseException e) {
+        //     e.printStackTrace();
+        // }
     
         add(controlPanel, BorderLayout.SOUTH);
-    
+       
+       
         loadBooks();  // Load the books into the table
         setVisible(true);
         setupTableListeners();
+     //   setupDateFields();
+     setupDateValidation(startDateField);  
+     setupDateValidation(endDateField);
+     setupDateListeners();
     }
+   private void setupDateValidation(JTextField dateField) {
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    dateField.addFocusListener(new FocusAdapter() {
+        @Override
+        public void focusLost(FocusEvent e) {
+            String text = dateField.getText();
+            try {
+                LocalDate date = LocalDate.parse(text, dateFormatter);
+                dateField.setText(date.format(dateFormatter));  // Reformat to ensure consistent formatting
+            } catch (DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(dateField, "Invalid date format. Please use dd/MM/yyyy.", "Date Error", JOptionPane.ERROR_MESSAGE);
+                dateField.setText("");
+            }
+        }
+    });
+
+    dateField.addKeyListener(new KeyAdapter() {
+        @Override
+        public void keyTyped(KeyEvent e) {
+            char c = e.getKeyChar();
+            if (!Character.isDigit(c) && c != KeyEvent.VK_SLASH && c != KeyEvent.VK_BACK_SPACE) {
+                e.consume();  // Ignore non-digit and non-slash characters
+            } else {
+                String currentText = dateField.getText();
+                int slashCount = (int) currentText.chars().filter(ch -> ch == '/').count();
+                
+                if (Character.isDigit(c)) {
+                    // Append slash after day and month digits if needed
+                    if ((currentText.length() == 2 || currentText.length() == 5) && slashCount < 2) {
+                        dateField.setText(currentText + "/" + c);
+                        e.consume();
+                    }
+                    // Limit input length and enforce correct format
+                    else if (currentText.length() >= 10) {
+                        e.consume();
+                    }
+                } else if (c == KeyEvent.VK_SLASH && slashCount >= 2) {
+                    e.consume();  // Limit to two slashes
+                }
+            }
+        }
+        
     
-    
+        @Override
+        public void keyPressed(KeyEvent e) {
+            // To handle backspace correctly when the cursor is after a slash
+            if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                String text = dateField.getText();
+                if (text.length() > 0 && text.charAt(text.length() - 2) == '/') {
+                    dateField.setText(text.substring(0, text.length() - 1));
+                }
+            }
+        }
+    });
+}
+ // Assuming startDateField and endDateField are the JTextFields for start date and end date respectively
+ private void validateAndCalculateDates() {
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    LocalDate startDate = null;
+    LocalDate endDate = null;
+
+    // Parse the dates from the input fields
+    try {
+        if (!startDateField.getText().isEmpty()) {
+            startDate = LocalDate.parse(startDateField.getText(), dateFormatter);
+        }
+        if (!endDateField.getText().isEmpty()) {
+            endDate = LocalDate.parse(endDateField.getText(), dateFormatter);
+        }
+    } catch (DateTimeParseException e) {
+        JOptionPane.showMessageDialog(this, "Invalid date format. Use dd/MM/yyyy.", "Date Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    if (startDate != null && endDate != null) {
+        if (startDate.isAfter(endDate)) {
+            JOptionPane.showMessageDialog(this, "Start Date cannot be after End Date.", "Date Error", JOptionPane.ERROR_MESSAGE);
+            startDateField.setText(endDate.format(dateFormatter)); // Reset Start Date
+            return;
+        }
+
+        // Calculate time spent in days
+        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow != -1) {
+            model.setValueAt(daysBetween, selectedRow, 5); // Assuming the Time Spent column is at index 5
+        }
+    }
+}
+private void setupDateListeners() {
+    // Set up your date validation and calculation to occur on specific events
+    startDateField.addFocusListener(new FocusAdapter() {
+        public void focusLost(FocusEvent e) {
+            validateAndCalculateDates();
+        }
+    });
+
+    endDateField.addFocusListener(new FocusAdapter() {
+        public void focusLost(FocusEvent e) {
+            validateAndCalculateDates();
+        }
+    });
+}
+
+
+
+
+
         private void loadBooks() {
             ArrayList<String[]> books = PersonalDB.loadPersonalBooks(username);
             for (String[] book : books) {
                 model.addRow(book);
             }
         }
-
         // This should be in the part of your code where you transition to the personal table view
 public void openPersonalTable() {
     String currentUser = username;  // Ensure this method or variable correctly provides the non-null username
@@ -396,6 +564,47 @@ private JPanel createControlPanel() {
 
     return controlPanel;
 }
+// private void setupDateFields() {
+//     try {
+//         MaskFormatter dateFormatter = new MaskFormatter("####-##-##");
+//         dateFormatter.setPlaceholderCharacter('_');
+
+//         // Initialize the formatted text fields with the mask formatter
+//         startDateField = new JFormattedTextField(dateFormatter);
+//         endDateField = new JFormattedTextField(dateFormatter);
+
+//         setupFieldAutoAdvance(startDateField);
+//         setupFieldAutoAdvance(endDateField);
+//     } catch (ParseException e) {
+//         e.printStackTrace();
+//     }
+// }
+
+// private void setupFieldAutoAdvance(JFormattedTextField field) {
+//     field.setFocusLostBehavior(JFormattedTextField.PERSIST);
+    
+//     // Adding a key listener to check for input completion
+//     field.addKeyListener(new KeyAdapter() {
+//         @Override
+//         public void keyTyped(KeyEvent e) {
+//             if (field.getText().matches("\\d{4}-\\d{2}-_")) {
+//                 // Move focus when year and month are entered
+//                 field.transferFocus();
+//             } else if (field.getText().matches("\\d{4}-__-__")) {
+//                 // Move focus from year to month part
+//                 field.setCaretPosition(5);
+//             } else if (field.getText().matches("\\d{4}-\\d{2}-\\d{2}")) {
+//                 // Move focus out of field if full date is entered
+//                 field.transferFocus();
+//             }
+//         }
+//     });
+// }
+
+// private void setupDateFields() {
+   
+// }
+
 
 
 
@@ -407,8 +616,8 @@ private void addBook(ActionEvent e) {
     String review = reviewField.getText();
     String status = "Not started";
     String timeSpent = "0";
-    String startDate = "";
-    String endDate = "";
+    String startDate = " ";
+    String endDate = " ";
     String userRating = "Add rating";
     String userReview = "Add review";
 
