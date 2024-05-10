@@ -13,8 +13,6 @@ This file (`BrodskyDataParser.java`) handles CSV data from a specific file (`bro
 #### Example of Use
 The `main()` method in this class shows how to use BrodskyDataParser to retrieve and handle book data.
 
-
-
 ### 2.`RegisterPage.java`
 
 This file (`RegisterPage.java`) carries out the registration function of the app using Java Swing for the user interface.
@@ -73,3 +71,70 @@ Also, implements selection listeners to populate text fields with details of the
 
 #### Example of Use
 The `main()` method initializes and displays the `MyGeneraltable` interface, allowing users to interact with the book database based on their role and preferences.
+
+### 5. ‘LoginFrame.java’
+The LoginFrame.java file is a Java Swing application responsible for creating a login interface where users can enter their credentials to access the book library system.
+### Components and Function
+setTitle("Book Library");: This line sets the title of the JFrame window to "Book Library". The title appears at the top of the window's frame and helps users identify the purpose of the application.
+setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);: This line sets the default operation that occurs when the user closes the window. JFrame.EXIT_ON_CLOSE specifies that the application should exit and terminate when the window is closed. This ensures that the application stops running gracefully when the user chooses to close the window.
+setSize(480, 320);: This line sets the initial size of the JFrame window to 480 pixels in width and 320 pixels in height. It determines the dimensions of the window when it first appears on the screen.
+setLayout(null);: This line sets the layout manager of the JFrame to null. In Java Swing, layout managers are responsible for automatically arranging components within a container. Setting the layout manager to null means that the programmer will manually specify the size and position of each component added to the container.
+setLocationRelativeTo(null);: This line sets the initial location of the JFrame window relative to the screen. Passing null as the argument centers the window on the screen horizontally and vertically, ensuring that it appears at the center of the screen when it is first displayed.
+### Example of Use
+The main() method initializes and displays the LoginFrame interface, allowing users to input their credentials to access the book library system.
+
+### 6. “MainMenu.java”
+“MainMenu.java” is a Swing application that serves as the main menu for accessing different functionalities of a book library system. It provides options for navigating to the general book database and the personal book database.
+### Components and Function
+ ImageIcon generalIcon = new ImageIcon("images\\personaldatabase.png");
+    ImageIcon personalIcon = new ImageIcon("images\\personaldatabase.png");
+These lines create ImageIcon objects by loading image files from the specified file paths. These images will be used to create buttons and labels in the user interface.
+  BufferedImage bufferedImage = new BufferedImage(img.getWidth(null), img.getHeight
+(null),
+        BufferedImage.TYPE_INT_ARGB);
+This line creates a BufferedImage object with the same dimensions as the loaded image.
+ generalButton.addActionListener(this);
+  personalButton.addActionListener(this);
+These lines register the MainMenu class as an action listener for the "General DB" and "Personal DB" buttons, which means that the actionPerformed method will be called when these buttons are clicked
+### Example of use
+The main() method initializes and displays the main menu interface, allowing users to choose between accessing the general book database or the personal book database. Upon clicking a button, the corresponding database interface is opened, providing users with access to relevant functionalities based on their selection.
+### 7. ”UserManagement.java”
+” UserManagement.java” represents a Java Swing application for managing user data displayed in a JTable
+### Components and Function
+ public static UserManagementTable userManagementTable;
+Declares a static variable userManagementTable of type UserManagementTable. It seems to be intended to hold an instance of UserManagementTable but is not initialized here.
+
+   UserManagementTable userManagementTable = new UserManagementTable("admin");
+Creates a new instance of the UserManagementTable class with the username “admin” and assigns it to the local variable userManagementTable.
+
+setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+Sets the default close operation for the frame to exit the application when closed.
+
+DefaultTableModel defaultTableModel = new DefaultTableModel(data, columnName);
+Creates a DefaultTableModel with the data and column names.
+
+### Example of Use
+
+The main() method of MyGeneralTable.java initializes and displays the interface of the book database (MyGeneralTable), allowing users to interact with the database based on their roles and preferences. Users can view, filter, edit, add, update, and delete book entries as per their permissions and requirements within the application interface.
+
+
+### 8.UserManagementPanel.java
+UserManagementPanel.java is a Swing component designed to manage user accounts within a larger application. It provides fields for entering username and password, along with buttons for deleting a user and accessing a general database. The actions triggered by these buttons are handled internally within the component, making it a self-contained module for user management tasks.
+### Components and Function
+public UserManagementPanel(String username)
+: Begins the constructor of the UserManagementPanel class, which takes a String parameter username.
+
+  usernameField = new JTextField();
+Initializes the usernameField variable as a new JTextField.
+
+ generalDbButton = new JButton("GeneralDB")
+Initializes the generalDbButton variable as a new JButton with the text “GeneralDB”
+
+The next few lines add labels, text fields, and buttons to the panel, setting their positions, sizes, fonts, and adding action listeners.
+
+### Example of use 
+
+The main() method in UserManagementPanel initializes and displays the user management panel interface, allowing users to interact with the user management functionalities.
+
+
+

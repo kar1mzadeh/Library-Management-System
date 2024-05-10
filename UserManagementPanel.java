@@ -71,7 +71,7 @@ public class UserManagementPanel extends JFrame implements ActionListener {
             }
         } else if (e.getSource() == generalDbButton) {
             this.dispose();
-           MyGeneraltable generalTable = new MyGeneraltable(username);
+           MyGeneraltable generalTable = new MyGeneraltable("admin");
             generalTable.setVisible(true); // Make sure to set the visibility of your General DB table
             this.dispose();   
         }
